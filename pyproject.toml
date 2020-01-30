@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "ksc"
+version = "0.1.0"
+description = "KNMI Climate Scenarios: resampling of global models for boundaries of local models"
+license = "Apache-2.0"
+authors = ["Evert Rol <e.rol@esciencecenter.nl>"]
+readme = "README.md"
+repository = "https://github.com/evertrol/ksc"
+keywords = ["knmi", "climate"]
+classifiers = [
+			"Development Status :: 3 - Alpha",
+			"Environment :: Console",
+			"Intended Audience :: Science/Research",
+			"License :: OSI Approved :: Apache Software License",
+			"Programming Language :: Python :: 3.7",
+			"Programming Language :: Python :: 3.8",
+			"Topic :: Scientific/Engineering :: Atmospheric Science"
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+numpy = "^1.18"
+#pandas = "^1.0"
+matplotlib = "^2"
+h5py = "^2.10"
+# Note: scitools-iris requires matplotlib 2, not 3.
+# Matplotlib 2 is incompatible with Python 3.8
+scitools-iris = "^2.3"
+pandas = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+#pytest = "^5.2"
+
+[tool.poetry.scripts]
+resample = "ksc.resampling"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
