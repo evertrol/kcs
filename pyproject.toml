@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "ksc"
+name = "kcs"
 version = "0.1.0"
 description = "KNMI Climate Scenarios: resampling of global models for boundaries of local models"
 license = "Apache-2.0"
 authors = ["Evert Rol <e.rol@esciencecenter.nl>"]
 readme = "README.md"
-repository = "https://github.com/evertrol/ksc"
+repository = "https://github.com/evertrol/kcs"
 keywords = ["knmi", "climate"]
 classifiers = [
 			"Development Status :: 3 - Alpha",
@@ -20,19 +20,19 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7"
 numpy = "^1.18"
-#pandas = "^1.0"
-matplotlib = "^2"
+pandas = "^1.0"
 h5py = "^2.10"
+matplotlib = "^3"
 # Note: scitools-iris requires matplotlib 2, not 3.
 # Matplotlib 2 is incompatible with Python 3.8
-scitools-iris = "^2.3"
-pandas = "^1.0.0"
+scitools-iris = { git = "https://github.com/evertrol/iris.git", branch = "pyke3", tag="3.0.dev0" }
+#cartopy = { git = "https://github.com/SciTools/cartopy.git" }
 
 [tool.poetry.dev-dependencies]
 #pytest = "^5.2"
 
 [tool.poetry.scripts]
-resample = "ksc.resampling"
+resample = "kcs.resampling"
 
 [build-system]
 requires = ["poetry>=0.12"]

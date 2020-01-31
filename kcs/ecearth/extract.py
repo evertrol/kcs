@@ -1,14 +1,14 @@
 """Module to extract data from EC-EARTH NetCDF data files.
 
 This module wraps the area extraction funcionality from
-`ksc.utils.coord`. It can run multiple processes in
+`kcs.utils.coord`. It can run multiple processes in
 parallel. Extracted datasets can be saved (by default) to disk, in
 subdirectoriees named after the variable and area (given by a template
 that follows Python formatted strings with variable names; the default
 is given in the `TEMPLATE` constant).
 
 The module can also be used as a executable module, with the `-m
-ksc.ecearth.extract` option to the `python` executable.
+kcs.ecearth.extract` option to the `python` executable.
 
 """
 
@@ -51,9 +51,9 @@ def process_single(path, areas, targetgrid=None, save_result=True,
     logger.info('Reading %s', path)
     cube = iris.load_cube(str(path))
     logger.info('Fixing coordinates')
-    cube = ksc.utils.coord.fixcoords(cube, realization)
+    cube = kcs.utils.coord.fixcoords(cube, realization)
     logger.info('Extracting areas')
-    cubes = ksc.utils.coord.extract_areas(cube, areas=areas, targetgrid=targetgrid,
+    cubes = kcs.utils.coord.extract_areas(cube, areas=areas, targetgrid=targetgrid,
                                           average_area=average_area, gridscheme=gridscheme)
     assert len(cubes) == len(areas)
 
@@ -151,7 +151,7 @@ def parse_args():
     args.files = list(itertools.chain.from_iterable(glob.glob(pattern) for pattern in args.files))
     args.save_result = not args.no_save_results
     args.average_area = not args.no_average_area
-    args.area = {name: ksc.config.AREAS[name] for name in args.area}
+    args.area = {name: kcs.config.AREAS[name] for name in args.area}
     return args
 
 
@@ -199,6 +199,9 @@ def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1
     logger.info("Finished processing %s", pformat(data))
 
     return data
+    kcs_logger = logging.getLogger('kcs')
+    kcs_logger.setLevel(level)
+    kcs_logger.addHandler(handler)
 
 
 def main():

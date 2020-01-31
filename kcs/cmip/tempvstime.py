@@ -20,7 +20,7 @@ from iris.cube import CubeList
 from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
 import matplotlib.pyplot as plt
-from ksc.utils.date import make_year_constraint_all_calendars
+from kcs.utils.date import make_year_constraint_all_calendars
 
 
 RCP_HISTORICAL = -1

@@ -8,9 +8,9 @@ import warnings
 import logging
 import numpy as np
 import iris
-from ksc.utils.io import load_cube
-from ksc.utils.coord import CoordConstraint
-from ksc.utils.date import make_year_constraint_all_calendars
+from kcs.utils.io import load_cube
+from kcs.utils.coord import CoordConstraint
+from kcs.utils.date import make_year_constraint_all_calendars
 
 
 RCP_HISTORICAL = -1
