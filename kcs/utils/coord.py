@@ -15,7 +15,6 @@ import numpy as np
 import iris
 import iris.coords
 import iris.coord_categorisation
-from .date import months_coord_to_days_coord
 from .constraints import CoordConstraint
 
 
@@ -46,14 +45,6 @@ def fixcoords(cube, realization):
     realization = iris.coords.AuxCoord(realization, 'realization')
     cube.add_aux_coord(realization)
 
-    day_coord = months_coord_to_days_coord(cube.coord('time'))
-    # `cube.replace_coord` does not work,
-    # because the original coordinate has no bounds,
-    # which doesn't match with the new coordinate, which
-    # does have bounds
-    cube.remove_coord('time')
-    cube.add_dim_coord(day_coord, 0)
-
     iris.coord_categorisation.add_season(cube, 'time')
     iris.coord_categorisation.add_season_year(cube, 'time')
     iris.coord_categorisation.add_year(cube, 'time')
@@ -62,7 +53,13 @@ def fixcoords(cube, realization):
     # Longitude and latitude need bounds for calculating area weights
     # (i.e., latitude corrections)
     for name in ('longitude', 'latitude'):
-        cube.coord(name).guess_bounds()
+        try:
+            cube.coord(name).guess_bounds()
+        except ValueError as exc:
+            if str(exc) == "Coord already has bounds. Remove the bounds before guessing new ones.":
+                pass
+            else:
+                raise
     return cube
 
 
