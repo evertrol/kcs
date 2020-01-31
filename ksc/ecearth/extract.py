@@ -1,42 +1,49 @@
+"""Module to extract data from EC-EARTH NetCDF data files.
+
+This module wraps the area extraction funcionality from
+`ksc.utils.coord`. It can run multiple processes in
+parallel. Extracted datasets can be saved (by default) to disk, in
+subdirectoriees named after the variable and area (given by a template
+that follows Python formatted strings with variable names; the default
+is given in the `TEMPLATE` constant).
+
+The module can also be used as a executable module, with the `-m
+ksc.ecearth.extract` option to the `python` executable.
+
+"""
+
 import sys
 import os
-from pathlib import Path
+import glob
+import pathlib
 import argparse
+from pprint import pformat
+from tempfile import NamedTemporaryFile
 from collections import namedtuple
+import itertools
 import functools
 import re
-import multiprocessing as mp
+import multiprocessing
 import warnings
 import logging
-from pprint import pprint
-import numpy as np
-import pandas as pd
 import iris
-from iris.cube import CubeList
 import ksc.utils.coord
-from ksc.utils.io import load_cube
-from ksc.utils.constraints import CoordConstraint
-from ksc.utils.date import make_year_constraint_all_calendars, months_coord_to_days_coord
+import ksc.config
 
 
-Data = namedtuple('Data', ['path', 'realization', 'cubes'])
+Data = namedtuple('Data', ['path', 'realization', 'area', 'cube'])
 
-RCP_HISTORICAL = -1
-AREAS = {
-    'rhinebasin': {'w': 6, 'e': 9, 'n': 52, 's': 47},
-    'nl': dict(w=3.3, e=7.1, s=50.0, n=53.6),
-    'nlbox': dict(w=4.5, e=8, s=50.5, n=53),
-    'weurbox': dict(w=4, e=14, s=47, n=53),
-    'global': None,
-    'nlpoint': dict(latitude=51.25, longitude=6.25),
-}
+# Allowed template substitution variable names: var, area, filename
+# (filename refers to the filename part of the input file, not the full path)
+TEMPLATE = "{var}-ecearth-{area}-area-averaged/{filename}"
 
 logger = logging.getLogger(__name__)
 
 
-def process_single(path, var, areas, regrid=True, targetgrid=None, save_result=True,
-                   average_area=True, gridscheme='area'):
-    regex = re.search('\_(?P<realization>\d+)\.nc$', path.name)
+def process_single(path, areas, targetgrid=None, save_result=True,
+                   average_area=True, gridscheme='area', outputdir=".", template=TEMPLATE,
+                   mp=False, tempdir=None):
+    regex = re.search(r'\_(?P<realization>\d+)\.nc$', path.name)
     if regex:
         realization = int(regex.group('realization'))
     else:
@@ -46,85 +53,111 @@ def process_single(path, var, areas, regrid=True, targetgrid=None, save_result=T
     logger.info('Fixing coordinates')
     cube = ksc.utils.coord.fixcoords(cube, realization)
     logger.info('Extracting areas')
-    cubes = ksc.utils.coord.extract_areas(cube, var=var, areas=areas, targetgrid=targetgrid,
+    cubes = ksc.utils.coord.extract_areas(cube, areas=areas, targetgrid=targetgrid,
                                           average_area=average_area, gridscheme=gridscheme)
     assert len(cubes) == len(areas)
 
+    data = []
     if save_result:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
-            for area_name, cube in cubes.items():
-                fname = f"{var}-ecearth-{area_name}-area-averaged/{path.name}"
-                logger.info("Saving area %s, realization %d in '%s'", area_name, realization, fname)
-                iris.save(cube, fname)
+            for area, cube in cubes.items():
+                var = cube.var_name
+                filename = path.name
+                outpath = pathlib.Path(outputdir) / template
+                dirname = str(outpath.parent).format(var=var, area=area, filename=filename)
+                os.makedirs(dirname, exist_ok=True)
+                outpath = str(outpath).format(var=var, area=area, filename=filename)
+                logger.info("Saving area %s, realization %d in '%s'",
+                            area, realization, outpath)
+                iris.save(cube, outpath)
+                data.append(Data(outpath, realization, area, cube))
+    elif mp:  # We're using multiple processes in separate threads
+        # We're saving the output to a temporary file
+        # The data is generally too large to pass directly to the main thread,
+        # so we need a workaround, and use disk space as intermediate storage
+        # Not overly efficient, but with large data files, more efficient solutions
+        # likely require a lot of extra code (such as passing the data structure
+        # in parts).
+        for area, cube in cubes.items():
+            var = cube.var_name
+            fh = NamedTemporaryFile(suffix=".nc", prefix="extract-ecearth",
+                                    dir=tempdir, delete=False)
+            outpath = fh.name
+            logger.debug("Saving cube to temporary file %s", outpath)
+            iris.save(cube, outpath)
+            data.append(Data(outpath, realization, area, None))
+    else:
+        data = [Data(None, realization, area, cube) for area, cube in cubes.items()]
 
-    cubes = dict(zip(areas, cubes))
-    return Data(path, realization, cubes)
+    if mp:  # Ensure no cubes are passed back to the main thread
+        data = [Data(item.path, item.realization, item.area, None) for item in data]
+
+    return data
 
 
-def process(paths, var, areas, regrid=True, save_result=True, average_area=True,
-            gridscheme='area', nproc=1):
+def process(paths, areas, regrid=False, save_result=True, average_area=True,
+            gridscheme='area', nproc=1, outputdir=".", template=TEMPLATE, tempdir=None):
     targetgrid = None
     if regrid:
         targetgrid = ksc.utils.coord.create_grid()
-    if save_result:
-        for area in areas:
-            dirname = f"{var}-ecearth-{area}-area-averaged"
-            logger.info("Creating directory '%s' to save extracted results",
-                        dirname)
-            os.makedirs(dirname, exist_ok=True)
 
-    func = functools.partial(process_single, var=var, areas=areas, targetgrid=targetgrid,
+    func = functools.partial(process_single, areas=areas, targetgrid=targetgrid,
                              save_result=save_result, average_area=average_area,
-                             gridscheme=gridscheme)
+                             gridscheme=gridscheme, outputdir=outputdir, template=template,
+                             mp=(nproc > 1), tempdir=tempdir)
     if nproc == 1:
-        data = list(map(func, paths))
-    else:
-        with mp.Pool(nproc, maxtasksperchild=1) as pool:
-            data = pool.map(func, paths)
-            input('>>? ')
+        data = list(itertools.chain.from_iterable(map(func, paths)))
+    else:  # Need maxtaskperchild, to avoid multiprocessing getting stuck
+        with multiprocessing.Pool(nproc, maxtasksperchild=1) as pool:
+            data = list(itertools.chain.from_iterable(pool.map(func, paths)))
     return data
 
 
 def parse_args():
-    class NotADirectoryError(ValueError):
-        pass
+    """Parse the command line arguments"""
+
+    areas = list(ksc.config.AREAS.keys())
+
     class ListAreas(argparse.Action):
+        """Helper class for argparse to list available areas and exit"""
         def __call__(self, parser, namespace, values, option_string):
-            print("\n".join(AREAS))
+            print("\n".join(areas))
             parser.exit()
-    def dir_path(string):
-        if os.path.isdir(string):
-            return string
-        else:
-            raise NotADirectoryError(string)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('variable')
-    parser.add_argument('area', nargs='+', help="One or more area names")
+    parser.add_argument('files', nargs='+', help="Input files. "
+                        "Globbing patterns (including recursive globbing with '**') allowed.")
+    parser.add_argument('--area', action='append', required=True,
+                        choices=areas, help="One or more area names")
+    parser.add_argument('--outputdir', default=".", help="Main output directory")
+    parser.add_argument('--template', default=TEMPLATE,
+                        help="Output path template, including subdirectory")
     parser.add_argument('-v', '--verbosity', action='count',
                         default=0, help="Verbosity level")
     parser.add_argument('-P', '--nproc', type=int, default=1,
                         help="Number of simultaneous processes")
     parser.add_argument('--list-areas', action=ListAreas, nargs=0,
                         help="List availabe areas and quit")
-    parser.add_argument('--datadir', type=dir_path, default=".",
-                        help="Directory with EC-EARTH data")
-    parser.add_argument('--no-regrid', action='store_true')
-    parser.add_argument('--no-save-results', action='store_true')
-    parser.add_argument('--no-average-area', action='store_true')
+    parser.add_argument('--regrid', action='store_true',
+                        help="Regrid the data (to a 1x1 deg. grid)")
+    parser.add_argument('--no-save-results', action='store_true',
+                        help="Store the resulting extracted datasets on disk")
+    parser.add_argument('--no-average-area', action='store_true',
+                        help="Don't average the extracted areas")
+    parser.add_argument('--tempdir')
     args = parser.parse_args()
-    args.regrid = not args.no_regrid
+    # Expand any glob patterns in args.files
+    args.files = list(itertools.chain.from_iterable(glob.glob(pattern) for pattern in args.files))
     args.save_result = not args.no_save_results
     args.average_area = not args.no_average_area
-    args.datadir = Path(args.datadir)
-    args.area = {name: AREAS[name] for name in args.area}
+    args.area = {name: ksc.config.AREAS[name] for name in args.area}
     return args
 
 
 def setup_logging(verbosity=0):
     levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
     level = levels[max(0, min(verbosity, len(levels)))]
-    logger = logging.getLogger('ec-earth')
     logger.setLevel(level)
     handler = logging.StreamHandler()
     handler.setLevel(level)
@@ -133,23 +166,51 @@ def setup_logging(verbosity=0):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    ksc_logger = logging.getLogger('ksc')
+    ksc_logger.setLevel(level)
+    ksc_logger.addHandler(handler)
 
-def run(var, areas, datadir, regrid=True, save_result=True, average_area=True, nproc=1):
-    #var = "pr"
-    #areas = ['global', 'nlpoint', 'nlbox', 'weurbox']
-    #dirpath = Path("/mnt/data/data1/thredds/ecearth16")
-    paths = datadir.glob(f"{var}_Amon_ECEARTH23_rcp85_186001-210012_*.nc")
-    paths = list(paths)
-    data = process(paths, var, areas, regrid=True, save_result=True, average_area=True, nproc=nproc)
-    pprint(data)
+
+def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1,
+        outputdir=".", template=TEMPLATE, tempdir=None):
+    paths = [pathlib.Path(str(path)) if not isinstance(path, pathlib.Path) else path
+             for path in paths]
+    # No need to regrid the EC-EARTH data: all on the same grid
+    data = process(paths, areas, regrid=regrid, save_result=save_result, average_area=average_area,
+                   nproc=nproc, outputdir=outputdir, template=template, tempdir=tempdir)
+
+    # Handle data post-processing, so we can return the data to the caller
+    # Data files were not passed when using multiprocessing: files may be
+    # too large for, or incompatible with, the pickling protocol used
+    # by multiprocessing. We'll have to reload the data from disk instead.
+    if nproc > 1:
+        logger.debug("Reloading files in main thread")
+        data = [Data(item.path, item.realization, item.area, iris.load_cube(str(item.path)))
+                for item in data]
+        if not save_result:
+            # Data files were saved to temporary files. Force Iris to load
+            # all data (foregoing lazy loading), and remove the temporary files
+            for item in data:
+                if item.cube.has_lazy_data:
+                    item.cube.data    # pylint: disable=pointless-statement
+                os.remove(item.path)
+            data = [Data(None, item.realization, item.area, item.cube) for item in data]
+
+    logger.info("Finished processing %s", pformat(data))
+
+    return data
 
 
 def main():
     args = parse_args()
     setup_logging(args.verbosity)
-    run(args.variable, args.area, args.datadir, regrid=args.regrid,
+    logger.debug("%s", " ".join(sys.argv))
+    logger.debug("Args: %s", args)
+    run(args.files, args.area, regrid=args.regrid,
         save_result=args.save_result, average_area=args.average_area,
-        nproc=args.nproc)
+        nproc=args.nproc, outputdir=args.outputdir, template=args.template,
+        tempdir=args.tempdir)
+    logger.debug("%s finished", sys.argv[0])
 
 
 if __name__ == "__main__":
