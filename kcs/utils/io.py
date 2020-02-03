@@ -1,6 +1,7 @@
 from collections.abc import Iterable
-import warnings
+import logging
 import iris
+import iris.cube
 import iris.coord_categorisation
 import iris.analysis
 import iris.util
@@ -10,7 +11,10 @@ from .date import make_year_constraint_all_calendars
 from .constraints import CoordConstraint
 
 
-def load_cube(paths, variable_name, timespan, areas=None, average_area=True, targetgrid=None):
+logger = logging.getLogger(__name__)
+
+
+def load_cube(paths, variable_name=None): #, timespan, areas=None, average_area=True, targetgrid=None):
     """Read datasets from paths into Iris cubes.
 
     Combines cubes if there are more than one dataset in the same file.
@@ -20,30 +24,55 @@ def load_cube(paths, variable_name, timespan, areas=None, average_area=True, tar
 
     """
 
-    if not isinstance(areas, Iterable) or isinstance(areas, (str, bytes)):
-        areas = [areas]
-    cubes = iris.load(sorted([str(path) for path in paths]), constraints=variable_name)
+    if isinstance(paths, str):
+        if variable_name:
+            cubes = iris.load_cubes(str(paths), constraints=variable_name)
+        else:
+            cubes = iris.load_cubes(str(paths))
+    else:
+        if variable_name:
+            cubes = iris.load([str(path) for path in paths], constraints=variable_name)
+        else:
+            cubes = iris.load([str(path) for path in paths])
+    # Select only the cubes with 3/4D data (time, lat, long, height)
+    cubes = iris.cube.CubeList([cube for cube in cubes if len(cube.coords()) >= 3])
+
     if len(cubes) == 0:
-        return [None] * len(areas)
+        return None
     iris.experimental.equalise_cubes.equalise_attributes(cubes)
     iris.util.unify_time_units(cubes)
 
     try:
         cube = cubes.concatenate_cube()
     except iris.exceptions.ConcatenateError as exc:
-        warnings.warn(str(exc) + "\nfor: " + str(paths))
+        logger.warning("%s for %s", exc, str(paths))
+        logger.warning("Using only the first cube of [%s]", cubes)
+        #print(type(cubes))
+        #print(paths)
+        #print(cubes)
+        #print([cube.coord('time')[[0, -1]] for cube in cubes])
+        #from collections import OrderedDict
+        #names = [cube.metadata.name() for cube in cubes]
+        #unique_names = list(OrderedDict.fromkeys(names))
+        #print(names, unique_names)
+        #for cube in cubes:
+        #    print(len(cube.coord('latitude').points), len(cube.coord('latitude').bounds))
+        ##print(cubes[0].coord('longitude').bounds == cubes[1].coord('longitude').bounds)
+        #print(cubes[0].coord('latitude').points - cubes[1].coord('latitude').points)
+        #import sys; sys.exit()
         cube = cubes[0]  # iris.load always returns a cubelist, so just take the first element
-
-    if timespan is not None:
-        if isinstance(timespan, (tuple, list)) and len(timespan) == 2:
-            timespan = make_year_constraint_all_calendars(timespan[0], timespan[1])
-        calendar = cube.coord('time').units.calendar
-        time_constraint = timespan.get(calendar, timespan['default'])
-        timecube = cube.extract(time_constraint)
-    else:
-        timecube = cube
-    if timecube is None:
-        return [None] * len(areas)
+        #raise
+    return cube
+#    if timespan is not None:
+#        if isinstance(timespan, (tuple, list)) and len(timespan) == 2:
+#            timespan = make_year_constraint_all_calendars(timespan[0], timespan[1])
+#        calendar = cube.coord('time').units.calendar
+#        time_constraint = timespan.get(calendar, timespan['default'])
+#        timecube = cube.extract(time_constraint)
+#    else:
+#        timecube = cube
+#    if timecube is None:
+#        return [None] * len(areas)
 
 
 def extract_areas(cube, var, areas=None, targetgrid=None, average_area=True, gridscheme='area'):
