@@ -1,4 +1,4 @@
-"""Module to extract data from EC-EARTH NetCDF data files.
+"""Module to extract data from CMIP NetCDF data files.
 
 This module wraps the area extraction funcionality from
 `kcs.utils.coord`. It can run multiple processes in
@@ -6,6 +6,10 @@ parallel. Extracted datasets can be saved (by default) to disk, in
 subdirectoriees named after the variable and area (given by a template
 that follows Python formatted strings with variable names; the default
 is given in the `TEMPLATE` constant).
+
+The input is a list of filenames or file globbing patterns; the latter
+can be used in case, in case the expansion gets too large for the
+shell.
 
 The module can also be used as a executable module, with the `-m
 kcs.ecearth` option to the `python` executable.
@@ -23,7 +27,7 @@ import kcs.extraction
 
 # Allowed template substitution variable names: var, area, filename
 # (filename refers to the filename part of the input file, not the full path)
-TEMPLATE = "ecearth/{var}-{area}-averaged/{filename}"
+TEMPLATE = "data/{var}-{area}-averaged/{filename}.nc"
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +63,8 @@ def parse_args():
     parser.add_argument('--no-average-area', action='store_true',
                         help="Don't average the extracted areas")
     parser.add_argument('--tempdir')
+    parser.add_argument('--subdir-per-realization', action='store_true')
+    parser.add_argument('--ignore-common-warnings', action='store_true')
     args = parser.parse_args()
     # Expand any glob patterns in args.files
     args.files = list(itertools.chain.from_iterable(glob.glob(pattern) for pattern in args.files))
@@ -92,7 +98,9 @@ def main():
     kcs.extraction.run(args.files, args.area, regrid=args.regrid,
                        save_result=args.save_result, average_area=args.average_area,
                        nproc=args.nproc, template=args.template,
-                       tempdir=args.tempdir)
+                       tempdir=args.tempdir,
+                       subdir_per_realization=args.subdir_per_realization,
+                       ignore_common_warnings=args.ignore_common_warnings)
     logger.debug("%s finished", sys.argv[0])
 
 
