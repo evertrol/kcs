@@ -7,17 +7,12 @@ subdirectoriees named after the variable and area (given by a template
 that follows Python formatted strings with variable names; the default
 is given in the `TEMPLATE` constant).
 
-The input is a list of filenames or file globbing patterns; the latter
-can be used in case, in case the expansion gets too large for the
-shell.
-
 The module can also be used as a executable module, with the `-m
 kcs.ecearth` option to the `python` executable.
 
 """
 
 import sys
-import glob
 import argparse
 import itertools
 import logging
@@ -44,8 +39,7 @@ def parse_args():
             parser.exit()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs='+', help="Input files. "
-                        "Globbing patterns (including recursive globbing with '**') allowed.")
+    parser.add_argument('files', nargs='+', help="Input files")
     parser.add_argument('--area', action='append', required=True,
                         choices=areas, help="One or more area names")
     parser.add_argument('--template', default=TEMPLATE,
@@ -66,8 +60,6 @@ def parse_args():
     parser.add_argument('--subdir-per-realization', action='store_true')
     parser.add_argument('--ignore-common-warnings', action='store_true')
     args = parser.parse_args()
-    # Expand any glob patterns in args.files
-    args.files = list(itertools.chain.from_iterable(glob.glob(pattern) for pattern in args.files))
     args.save_result = not args.no_save_results
     args.average_area = not args.no_average_area
     args.area = {name: kcs.config.AREAS[name] for name in args.area}
