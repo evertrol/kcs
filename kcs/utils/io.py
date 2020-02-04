@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+import pathlib
 import logging
 import iris
 import iris.cube
@@ -24,7 +25,7 @@ def load_cube(paths, variable_name=None): #, timespan, areas=None, average_area=
 
     """
 
-    if isinstance(paths, str):
+    if isinstance(paths, (str, pathlib.Path)):
         if variable_name:
             cubes = iris.load_cubes(str(paths), constraints=variable_name)
         else:
