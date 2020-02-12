@@ -42,24 +42,25 @@ fix_nonmatching_historical: randomrun
 """
 
 import re
-from collections import defaultdict
+import logging
 import pandas as pd
-from ..types import DataAttrs
 
 
 ATTRIBUTES = {
     'experiment': "experiment",
     'model': "model_id",
-    'realizaton': "realization",
+    'realization': "realization",
     'initialization': "initialization_method",
     'physics': "physics_version",
+    'prip': "parent_experiment_rip"
 }
 ATTRIBUTES_EMPTY = {
     'experiment': "",
     'model': "",
-    'realizaton': 0,
+    'realization': 0,
     'initialization': 0,
     'physics': 0,
+    'prip': None,
 }
 
 # Note that there is no use of \w+, since this includes the underscore
@@ -74,8 +75,10 @@ FILENAME_PATTERN = {
     'physics': r'_r\d+i\d+p(?P<physics>\d+)_',
 }
 
+logger = logging.getLogger(__name__)
 
-def _get_attributes_from_cube(attrs, match_by, on_no_match, attributes):
+
+def _get_attributes_from_cube(attrs, match_by, attributes):
     """DUMMY"""
     data, found = {}, True
 
@@ -90,6 +93,16 @@ def _get_attributes_from_cube(attrs, match_by, on_no_match, attributes):
     except KeyError:
         found = False
 
+    try:
+        prip = attrs[attributes['prip']]
+        match = re.search(r'r(\d+)i(\d+)p(\d+)', prip)
+        if match:
+            data['prip'] = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        else:
+            data['prip'] = None
+    except KeyError:
+        data['prip'] = None
+
     if match_by != 'model':
         for key in ['realization', 'physics', 'initialization']:
             try:
@@ -102,7 +115,7 @@ def _get_attributes_from_cube(attrs, match_by, on_no_match, attributes):
     return data, found
 
 
-def _get_attributes_from_filename(filename, match_by, on_no_match, pattern):
+def _get_attributes_from_filename(filename, match_by, pattern):
     """DUMMY"""
     data, found = {}, True
 
@@ -130,32 +143,31 @@ def _get_attributes_from_filename(filename, match_by, on_no_match, pattern):
     return data, found
 
 
-def get_attributes(cube, path, match_by, info_from, on_no_match, attributes, pattern):
+def get_attributes(cube, path, match_by, info_from, attributes, pattern):
     """DUMMY"""
     attrs = cube.attributes
     filename = path.name
-    data= {}
-    for info in info_from:
-        found = True
+    data = {}
+    # Run in reversed, so the information from the most valuable asset
+    # is added last (in `data.update(result)`)
+    for info in reversed(info_from):
         if info == 'attributes':
-            result, found = _get_attributes_from_cube(attrs, match_by, on_no_match, attributes)
+            result, _ = _get_attributes_from_cube(attrs, match_by, attributes)
         elif info == 'filename':
-            result, found = _get_attributes_from_filename(filename, match_by, on_no_match, pattern)
+            result, _ = _get_attributes_from_filename(filename, match_by, pattern)
         else:
-            raise ValueError("incorrect argument for 'info_from': should be 'attributes' or 'filename'")
+            raise ValueError("incorrect argument for 'info_from': "
+                             "should be 'attributes' or 'filename'")
         data.update(result)
-        if found:
-            break
+
+    if 'experiment' not in data:
+        raise KeyError("missing experiment info")
+    if match_by == 'model':
+        if 'model' not in data:
+            raise KeyError("missing model info")
     else:
-        # We may still have all the necessary info
-        if 'experiment' not in data:
-            raise KeyError("missing experiment info")
-        if match_by == 'model':
-            if 'model' not in data:
-                raise KeyError("missing model info")
-        else:
-            if not ('realization' in data and 'physics' in data and 'initialization' in data):
-                raise KeyError("missing ensemble info")
+        if not ('realization' in data and 'physics' in data and 'initialization' in data):
+            raise KeyError("missing ensemble info")
 
     return data
 
@@ -163,43 +175,72 @@ def get_attributes(cube, path, match_by, info_from, on_no_match, attributes, pat
 def match(dataset, match_by='ensemble', on_no_match='error', historical_key='historical'):
     """DUMMY DOC-STRING"""
 
-    exp_selection = dataset['experiment'] != 'historical'
-    hist_selection = dataset['experiment'] == 'historical'
+    dataset['index_match_run'] = -1
 
-    dataset['match_historical_run'] = None
+    for model, group in dataset.groupby('model'):
+        future_sel = group['experiment'] != historical_key
+        hist_sel = group['experiment'] == historical_key
+        if not any(hist_sel):
+            logger.warning("Model %s has no historical runs", model)
+            continue
 
-    print(dataset.head())
+        for row in group.loc[future_sel, :].itertuples():
+            index = row.Index
+            experiment = row.experiment
+            prip = row.prip
+            ensemble = f"r{row.realization}i{row.initialization}p{row.physics}"
+            if prip:
+                realization, initialization, physics = prip
+            else:
+                logger.warning("parent RIP not available: matching by ensemble info directly")
+                realization = row.realization
+                initialization = row.initialization
+                physics = row.physics
+            if match_by == 'ensemble':
+                sel = (hist_sel &
+                       (group['realization'] == realization) &
+                       (group['initialization'] == initialization) &
+                       (group['physics'] == physics))
+            else: # matching by model: any historical run will do
+                sel = hist_sel
+            if not any(sel):
+                if on_no_match == 'error':
+                    msg = f"no historical data for {model}"
+                    if match_by == 'ensemble':
+                        msg += f", {ensemble}"
+                    raise ValueError(msg)
+                logger.warning("no matching historical run found for %s - %s - %s",
+                               model, experiment, ensemble)
+                if on_no_match == 'remove' or on_no_match == 'ignore':
+                    continue
+                if on_no_match == 'randomrun' and match_by == 'ensemble':
+                    logger.info("Finding replacement historical run for %s - %s - %s",
+                                model, experiment, ensemble)
 
-    if match_by == 'ensemble':
-        keys = ['model', 'realization', 'initialization', 'physics']
-    else:
-        keys = ['model']
+                    # Grab from all of the dataset, select by index
+                    sel = (hist_sel &
+                           (group['initialization'] == initialization) &
+                           (group['physics'] == physics))
+                    if not any(sel):
+                        raise ValueError("No matching random realization")
+                elif on_no_match == 'random':
+                    sel = hist_sel
+                    logger.info("Using replacement historical run for %s - %s", model, experiment)
+                else:
+                    raise ValueError(f"Parameter 'on_no_match' has invalid value {on_no_match}")
+            hrow = group.loc[sel, :].iloc[0, :]
+            hindex = group.loc[sel, :].index.array[0]
+            # Pick the first (if multiple, e.g. for match_by=='model') historical cubes
+            if match_by == 'ensemble':
+                logger.debug("Matching %s - %s - %s with %s - r%di%dp%d historical run",
+                             model, experiment, ensemble, hrow['model'], hrow['realization'],
+                             hrow['initialization'], hrow['physics'])
+            else:
+                logger.debug("Matching %s - %s with %s - r%di%dp%d historical run",
+                             model, experiment, hrow['model'], hrow['realization'],
+                             hrow['initialization'], hrow['physics'])
 
-    groups = []
-    for index, group in dataset.groupby(keys):
-        hist_sel = group['experiment'] == 'historical'
-        exp_sel = group['experiment'] != 'historical'
-        if match_by == 'ensemble' and sum(hist_sel) > 1:
-            raise ValueError(f"Found multiple historical runs in "
-                             f"{index[0]}, r{index[1]}i{index[2]}p{index[3]}")
-        if sum(hist_sel) == 0:
-            if on_no_match == 'error':
-                msg = f"no historical data for {index[0]}"
-                if match_by == 'ensemble':
-                    msg += f", r{index[1]}i{index[2]}p{index[3]}"
-                raise ValueError(msg)
-            elif on_no_match == 'remove' or on_no_match == 'ignore':
-                continue
-
-        # Grab the historical cube
-        cube = group.loc[hist_sel, 'cube']
-        # Pick the first (if multiple, e.g. for match_by=='model') historical cubes
-        if isinstance(cube, pd.Series):
-            cube = cube.iloc[0]
-        group.loc[exp_sel, 'match_historical_run'] = [cube] * sum(exp_sel)
-        groups.append(group)
-
-    dataset = pd.concat(groups)
+            dataset.loc[index, 'index_match_run'] = hindex
 
     return dataset
 
@@ -265,19 +306,20 @@ def run(cubes, paths, match_by='ensemble', info_from=('attributes', 'filename'),
     for cube, path in zip(cubes, paths):
         default = ATTRIBUTES_EMPTY.copy()
         attrs = get_attributes(cube, path, match_by=match_by, info_from=info_from,
-                               on_no_match=on_no_match, attributes=attributes,
-                               pattern=filename_pattern)
+                               attributes=attributes, pattern=filename_pattern)
         default.update(attrs)
-        dataset.append(
-            dict(path=path, cube=cube, realization=default['realization'],
-                 initialization=default['initialization'],
-                 experiment=default['experiment'],
-                 physics=default['physics'],
-                 model=default['model'])
-            )
+        default.update({'cube': cube, 'path': path})
+        dataset.append(default)
 
     dataset = pd.DataFrame(dataset)
+    dataset['experiment'] = dataset['experiment'].str.lower()
 
-    dataset = match(dataset, match_by=match_by, on_no_match=on_no_match)
+    dataset = match(dataset, match_by=match_by, on_no_match=on_no_match,
+                    historical_key=historical_key)
+
+    sel = ((dataset['experiment'] == 'historical') |
+           (dataset['index_match_run'] > -1))
+
+    dataset = dataset.loc[sel, :]
 
     return dataset
