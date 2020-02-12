@@ -21,13 +21,12 @@ import multiprocessing
 import warnings
 import logging
 import iris
+from kcs.types import Data
 import kcs.utils.io
 import kcs.utils.coord
 from kcs.utils.date import months_coord_to_days_coord
 import kcs.config
 
-
-Data = namedtuple('Data', ['path', 'realization', 'area', 'cube'])
 
 # Allowed template substitution variable names: var, area, filename
 # (filename refers to the filename part of the input file, not the full path)
