@@ -12,6 +12,7 @@ import logging
 import warnings
 import pathlib
 import functools
+from itertools import chain
 from datetime import datetime
 import multiprocessing
 from pprint import pformat
@@ -28,7 +29,7 @@ import kcs.utils.logging
 import kcs.utils.argparse
 import kcs.utils.constraints
 import kcs.utils.matching
-
+from kcs.utils.atlist import atlist
 import dask.config
 
 #dask.config.set(scheduler='processes', num_workers=6)
@@ -48,13 +49,8 @@ def read_data(paths, match_by='ensemble', info_from=('attributes', 'filename'),
               attributes=None, filename_pattern=None):
     """DUMMY DOC-STRING"""
     cubes = [iris.load_cube(str(path)) for path in paths]
-    print(type(cubes[0].data), cubes[0].has_lazy_data())
-    #sys.exit()
-    dataset = kcs.utils.matching.run(cubes, paths, match_by=match_by, info_from=info_from,
-                                     on_no_match=on_no_match, historical_key=historical_key,
-                                     attributes=attributes, filename_pattern=filename_pattern)
 
-    return dataset
+    return cubes
 
 
 def extract_season(cubes, season):
@@ -363,7 +359,7 @@ def parse_args():
                         help="Output CSV file with the distribution "
                         "percentiles-versus-year table. "
                         "The default is 'distribution-percentiles.csv'")
-    parser.add_argument('--historical', default=HISTORICAL_KEY,
+    parser.add_argument('--historical-key', default=HISTORICAL_KEY,
                         help="Identifier for the historical experiment "
                         f"(default '{HISTORICAL_KEY}').")
     parser.add_argument('--period', nargs=2, type=int, default=PERC_PERIOD,
@@ -420,13 +416,17 @@ def main():
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
-    dataset = read_data(args.paths, historical_key=args.historical,
-                        match_by=args.match_by, info_from=args.match_info_from,
-                        on_no_match=args.on_no_match)
+    paths = list(chain.from_iterable(atlist(path) for path in args.paths))
+    cubes = read_data(paths)
+
+    dataset = kcs.utils.matching.run(
+        cubes, paths, match_by=args.match_by, info_from=args.match_info_from,
+        on_no_match=args.on_no_match, historical_key=args.historical_key)
+#                                     attributes=attributes, filename_pattern=filename_pattern)
     dataset['fname'] = dataset['path'].apply(lambda x: x.stem)
     dataset['cubesumm'] = dataset['cube'].apply(lambda x: x.summary(shorten=True))
 
-    result = run(dataset, historical_key=args.historical,
+    result = run(dataset, historical_key=args.historical_key,
                  season=args.season, average_years=args.average_years,
                  relative=args.relative, reference_period=args.reference_period,
                  period=args.period, normby=args.norm_by,
