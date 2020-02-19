@@ -28,29 +28,32 @@ import kcs.utils.date
 import kcs.utils.logging
 import kcs.utils.argparse
 import kcs.utils.constraints
+import kcs.utils.attributes
 import kcs.utils.matching
 from kcs.utils.atlist import atlist
-import dask.config
 
-#dask.config.set(scheduler='processes', num_workers=6)
 
 HISTORICAL_KEY = 'historical'
 REFERENCE_PERIOD = (1981, 2010)
 MINDATA = {'historical': 20, 'future': 4}
 PERC_PERIOD = (1950, 2100)
 
+
 # If we run as a runnable module, use a more appropriate logger name
 logname = 'kcs.distribution' if __name__ == '__main__' else __name__
 logger = logging.getLogger(logname)
 
 
-def read_data(paths, match_by='ensemble', info_from=('attributes', 'filename'),
-              on_no_match='randomrun', historical_key='historical',
+def read_data(paths, info_from=('attributes', 'filename'),
               attributes=None, filename_pattern=None):
     """DUMMY DOC-STRING"""
     cubes = [iris.load_cube(str(path)) for path in paths]
 
-    return cubes
+    # Get the attributes, and create a dataframe with cubes & attributes
+    dataset = kcs.utils.attributes.get(cubes, paths, info_from=info_from,
+                                       attributes=attributes, filename_pattern=filename_pattern)
+
+    return dataset
 
 
 def extract_season(cubes, season):
@@ -288,11 +291,9 @@ def calc_percentile_year(dataset, year, average_experiments=False):
 
     if average_experiments:
         data = []
-        n = 0
         for _, group in dataset.groupby(['model', 'experiment', 'matched_exp']):
             cubes = list(filter(None, map(constraint.extract, group['cube'])))
             if cubes:
-                n += len(cubes)
                 data.append(np.mean([cube.data for cube in cubes]))
     else:
         cubes = list(filter(None, map(constraint.extract, dataset['cube'])))
@@ -417,12 +418,12 @@ def main():
     logger.debug("Args: %s", args)
 
     paths = list(chain.from_iterable(atlist(path) for path in args.paths))
-    cubes = read_data(paths)
+    dataset = read_data(paths)
 
-    dataset = kcs.utils.matching.run(
-        cubes, paths, match_by=args.match_by, info_from=args.match_info_from,
-        on_no_match=args.on_no_match, historical_key=args.historical_key)
-#                                     attributes=attributes, filename_pattern=filename_pattern)
+    dataset = kcs.utils.matching.match(
+        dataset, match_by=args.match_by, on_no_match=args.on_no_match,
+        historical_key=args.historical_key)
+
     dataset['fname'] = dataset['path'].apply(lambda x: x.stem)
     dataset['cubesumm'] = dataset['cube'].apply(lambda x: x.summary(shorten=True))
 

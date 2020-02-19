@@ -60,7 +60,6 @@ def atlist(path, maxnesting=10):
     """
 
     if maxnesting < 0:
-        yield
         return  # quit iterator
 
     _aspath = isinstance(path, Path)
