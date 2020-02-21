@@ -39,9 +39,9 @@ ATTRIBUTES_DEFAULT = {
     'physics': 0,
     'prip': None,
 }
-# Note that there is no use of \w+, since this includes the underscore
+# Note that \w+ can't be used, since this includes the underscore
 # Hence, sets like [-A-Za-z0-9]+ are used
-FILENAME_PATTERN = {
+FILENAME_PATTERNS = {
     'var': r'^(?P<var>[a-z]+)_',
     'mip': r'^[a-z]+_(?P<mip>[A-Za-z]+)_',
     'model': r'^[a-z]+_[A-Za-z]+_(?P<model>[-A-Za-z0-9]+)_',
@@ -50,6 +50,29 @@ FILENAME_PATTERN = {
     'initialization': r'_r\d+i(?P<initialization>\d+)p\d+_',
     'physics': r'_r\d+i\d+p(?P<physics>\d+)_',
 }
+# List of filename regex patterns
+# First is for ESMValTool
+# Second for CMIP5 local data
+FILENAME_PATTERNS = ["""^CMIP\d_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\d+)\
+i(?P<initialization>\d+)\
+p(?P<physics>\d+)_\
+(?P<var>[a-z]+)_\
+.*\.nc$\
+""",
+"""^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\d+)\
+i(?P<initialization>\d+)\
+p(?P<physics>\d+)_\
+.*\.nc$\
+"""]
 
 logger = logging.getLogger(__name__)
 
@@ -89,28 +112,22 @@ def _get_attributes_from_cube(attrs, attributes):
     return data, found
 
 
-def _get_attributes_from_filename(filename, pattern):
+def _get_attributes_from_filename(filename, patterns):
     """DUMMY"""
     data, found = {}, True
 
-    match = re.search(pattern['experiment'], filename)
-    if match:
-        data['experiment'] = match.group('experiment')
-    else:
-        found = False
-
-    match = re.search(pattern['model'], filename)
-    if match:
-        data['model'] = match.group('model')
-    else:
-        found = False
-
-    for key in ['realization', 'physics', 'initialization']:
-        match = re.search(pattern[key], filename)
+    for pattern in patterns:
+        match = re.search(pattern, filename)
         if match:
-            data[key] = int(match.group(key))
-        else:
-            found = False
+            break
+    else:  # no match
+        return {}, False
+    print('MATCH', pattern, match)
+
+    data['experiment'] = match.group('experiment')
+    data['model'] = match.group('model')
+    for key in ['realization', 'physics', 'initialization']:
+        data[key] = int(match.group(key))
 
     return data, found
 
@@ -172,7 +189,9 @@ def get(cubes, paths, info_from=('attributes', 'filename'),
     if attributes is None:
         attributes = ATTRIBUTES
     if filename_pattern is None:
-        filename_pattern = FILENAME_PATTERN
+        filename_pattern = FILENAME_PATTERNS
+    elif isinstance(filename_pattern, str):
+        filename_pattern = [filename_pattern]
     if isinstance(info_from, str):
         info_from = [info_from]
 
