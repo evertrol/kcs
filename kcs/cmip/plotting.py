@@ -75,12 +75,12 @@ def plot(figure, percs, dataset=None, xlabel=None, ylabel=None,
         plt.legend()
     if xrange is None:
         xrange = [datetime(1950, 1, 1), datetime(2100, 1, 1)]
-    if isinstance(xrange[0], float):
+    if isinstance(xrange[0], (int, float)):
         year = int(xrange[0])
         mon = int(12 * (xrange[0] - year)) + 1
         day = int(28 * (xrange[0] - year - (mon-1)/12)) + 1   # Simple, safe estimate
         xrange = [datetime(year, mon, day), xrange[1]]
-    if isinstance(xrange[1], float):
+    if isinstance(xrange[1], (int, float)):
         year = int(xrange[1])
         mon = int(12 * (xrange[1] - year)) + 1
         day = int(28 * (xrange[1] - year - (mon-1)/12)) + 1   # Simple, safe estimate
