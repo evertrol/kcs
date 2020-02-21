@@ -51,8 +51,9 @@ def read_data(paths, info_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(cubes, paths, info_from=info_from,
-                                       attributes=attributes, filename_pattern=filename_pattern)
+    dataset = kcs.utils.attributes.get(
+        cubes, paths, info_from=info_from,
+        attributes=attributes, filename_pattern=filename_pattern)
 
     return dataset
 
@@ -335,7 +336,22 @@ def calc_percentiles(dataset, period=PERC_PERIOD, average_experiments=False, npr
 def run(dataset, historical_key, season=None, average_years=True,
         relative=False, reference_period=REFERENCE_PERIOD,
         period=PERC_PERIOD, normby='run', average_experiments=False):
-    """DUMMY DOC-STRING"""
+    """Calculate the percentile yearly change distribution for the input data
+
+    Also performs extracting of season (optional), averaging of years
+    (optional) and normalization to a common reference period (needed
+    for a better inter-model comparison), before the percentiles are
+    calculated.
+
+    Returns
+      2-tuple of
+
+      - Percentiles, as Pandas DataFrame
+
+      - Input dataset, but with possibly extracted seasons and
+        averaged years, and normalized data
+
+    """
 
     if season:
         dataset['cube'] = extract_season(dataset['cube'], season)
@@ -350,7 +366,7 @@ def run(dataset, historical_key, season=None, average_years=True,
     dataset['reference_value'] = reference_values
     dataset = normalize(dataset, relative=relative, normby=normby)
 
-    # Print statement for verification
+    ## Print statement for verification
     #with pd.option_context('max_rows', 999):
     #    for _, group in dataset.groupby(['model', 'experiment', 'matched_exp']):
     #        columns = ['model', 'experiment', 'realization', 'initialization', 'physics']

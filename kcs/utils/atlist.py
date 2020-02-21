@@ -68,6 +68,10 @@ def atlist(path, maxnesting=10):
     if s_path.startswith('@'):
         s_path = s_path[1:]
     else:
+        # See
+        # https://www.python.org/dev/peps/pep-0255/#then-why-not-allow-an-expression-on-return-too
+        # why there is `yield path; return` here, and just `return`
+        # above
         yield path
         return  # quit iterator
 
