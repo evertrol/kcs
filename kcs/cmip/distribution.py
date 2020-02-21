@@ -376,7 +376,7 @@ def run(dataset, historical_key, season=None, average_years=True,
     percentiles = calc_percentiles(dataset, period=period,
                                    average_experiments=average_experiments)
 
-    return percentiles
+    return percentiles, dataset
 
 
 def parse_args():
@@ -452,14 +452,11 @@ def main():
         dataset, match_by=args.match_by, on_no_match=args.on_no_match,
         historical_key=args.historical_key)
 
-    dataset['fname'] = dataset['path'].apply(lambda x: x.stem)
-    dataset['cubesumm'] = dataset['cube'].apply(lambda x: x.summary(shorten=True))
-
-    result = run(dataset, historical_key=args.historical_key,
-                 season=args.season, average_years=args.average_years,
-                 relative=args.relative, reference_period=args.reference_period,
-                 period=args.period, normby=args.norm_by,
-                 average_experiments=args.average_experiments)
+    result, _ = run(dataset, historical_key=args.historical_key,
+                    season=args.season, average_years=args.average_years,
+                    relative=args.relative, reference_period=args.reference_period,
+                    period=args.period, normby=args.norm_by,
+                    average_experiments=args.average_experiments)
     result.to_csv(args.outfile, index_label="date")
     logger.info("Done processing: percentiles = %s", result)
 
