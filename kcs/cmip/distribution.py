@@ -21,6 +21,7 @@ import iris.cube
 import iris.analysis
 import iris.util
 import iris.experimental.equalise_cubes
+import iris.coord_categorisation
 import iris.exceptions
 import numpy as np
 import pandas as pd
@@ -62,6 +63,9 @@ def extract_season(cubes, season):
     # constraint to multiprocessing (which doesn't handle lambdas).
     constraint = iris.Constraint(season=kcs.utils.constraints.EqualConstraint(season))
     logger.info("Extracting season %s", season)
+    for cube in cubes:
+        if not cube.coords('season'):
+            iris.coord_categorisation.add_season(cube, 'time')
     cubes = list(map(constraint.extract, cubes))
     return cubes
 
@@ -69,8 +73,12 @@ def extract_season(cubes, season):
 def average_year_cube(cube, season=None):
     """DUMMY DOC-STRING"""
     if season:
+        if not cube.coords('season_year'):
+            iris.coord_categorisation.add_season_year(cube, 'time')
         mean = cube.aggregated_by('season_year', iris.analysis.MEAN)
     else:
+        if not cube.coords('year'):
+            iris.coord_categorisation.add_year(cube, 'time')
         mean = cube.aggregated_by('year', iris.analysis.MEAN)
     return mean
 
@@ -288,6 +296,10 @@ def calc_percentile_year(dataset, year, average_experiments=False):
     """Calculate the percentile distribution of the cubes for a given year"""
 
     constraint = iris.Constraint(year=kcs.utils.constraints.EqualConstraint(year))
+
+    #for cube in dataset['cube']:
+    #    if not cube.coords('year'):
+    #        iris.coord_categorisation.add_year(cube, 'time')
 
     if average_experiments:
         data = []
