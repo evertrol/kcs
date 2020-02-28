@@ -404,8 +404,8 @@ def parse_args():
                         help="Do not use yearly/seasonal averages")
     parser.add_argument('--reference-period', nargs=2, type=int,
                         default=list(REFERENCE_PERIOD),
-                        help="Reference period: start and end year. Years are "
-                        "inclusive (i.e., Jan 1 of 'start' up to and "
+                        help="Reference period (to normalize EC-EARTH data): start and end year. "
+                        "Years are inclusive (i.e., Jan 1 of 'start' up to and "
                         f"including Dec 31 of 'end'). Default {REFERENCE_PERIOD}.")
     parser.add_argument('--norm-by', choices=['model', 'experiment', 'run'],
                         default='run',
@@ -447,7 +447,6 @@ def main():
 
     paths = list(chain.from_iterable(atlist(path) for path in args.paths))
     dataset = read_data(paths)
-
     dataset = kcs.utils.matching.match(
         dataset, match_by=args.match_by, on_no_match=args.on_no_match,
         historical_key=args.historical_key)

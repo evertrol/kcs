@@ -115,7 +115,8 @@ def parse_args():
     parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
                                      conflict_handler='resolve')
     parser.add_argument('infile', help="Input CSV file with distribution percentiles")
-    parser.add_argument('outfile', help="Output figure filename")
+    parser.add_argument('outfile', help="Output figure filename. The extension determines "
+                        "the file type.")
     parser.add_argument('--xlabel', default='Year')
     parser.add_argument('--ylabel')
     parser.add_argument('--xrange', type=float, nargs=2)
