@@ -19,17 +19,14 @@ import logging
 import kcs.config
 import kcs.extraction
 import kcs.utils.logging
+from kcs.utils.atlist import atlist
 
 
 # Allowed template substitution variable names: var, area, filename
 # (filename refers to the filename part of the input file, not the full path)
 TEMPLATE = "data/{var}-{area}-averaged/{filename}.nc"
 
-# If we run as a runnable module, use a more appropriate logger name
-if __name__ == '__main__':
-    logger = logging.getLogger('kcs.extraction')
-else:
-    logger = logging.getLogger(__name__)
+logger = logging.getLogger('kcs.extraction')
 
 
 def parse_args():
@@ -92,7 +89,8 @@ def main():
     kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
-    kcs.extraction.run(args.files, args.area, regrid=args.regrid,
+    files = list(itertools.chain.from_iterable(atlist(fname) for fname in args.files))
+    kcs.extraction.run(files, args.area, regrid=args.regrid,
                        save_result=args.save_result, average_area=args.average_area,
                        nproc=args.nproc, template=args.template,
                        tempdir=args.tempdir,
