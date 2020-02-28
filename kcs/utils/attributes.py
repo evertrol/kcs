@@ -24,12 +24,12 @@ import pandas as pd
 
 
 ATTRIBUTES = {
-    'experiment': "experiment",
-    'model': "model_id",
+    'experiment': "experiment_id",
+    'model': ["model_id", "source_id"],
     'realization': "realization",
     'initialization': "initialization_method",
     'physics': "physics_version",
-    'prip': "parent_experiment_rip"
+    'prip': ["parent_experiment_rip", "parent_variant_label"],
 }
 ATTRIBUTES_DEFAULT = {
     'experiment': "",
@@ -53,6 +53,7 @@ FILENAME_PATTERNS = {
 # List of filename regex patterns
 # First is for ESMValTool
 # Second for CMIP5 local data
+# Third for CMIP6 data
 FILENAME_PATTERNS = ["""^CMIP\d_\
 (?P<model>[-A-Za-z0-9]+)_\
 (?P<mip>[A-Za-z]+)_\
@@ -63,6 +64,7 @@ p(?P<physics>\d+)_\
 (?P<var>[a-z]+)_\
 .*\.nc$\
 """,
+# CMIP 5
 """^\
 (?P<var>[a-z]+)_\
 (?P<mip>[A-Za-z]+)_\
@@ -72,7 +74,21 @@ r(?P<realization>\d+)\
 i(?P<initialization>\d+)\
 p(?P<physics>\d+)_\
 .*\.nc$\
-"""]
+""",
+# CMIP 6
+"""^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\d+)\
+i(?P<initialization>\d+)\
+p(?P<physics>\d+)\
+f\d+_\
+gn_\
+.*\.nc$\
+"""
+]
 
 logger = logging.getLogger(__name__)
 
@@ -86,20 +102,26 @@ def _get_attributes_from_cube(attrs, attributes):
     except KeyError:
         found = False
 
-    try:
-        data['model'] = attrs[attributes['model']]
-    except KeyError:
-        found = False
+    data['model'] = None
+    keys = attributes['model']
+    if isinstance(keys, str):
+        keys = [keys]
+    for key in keys:
+        if key in attrs:
+            data['model'] = attrs[key]
+            break
 
-    try:
-        prip = attrs[attributes['prip']]
-        match = re.search(r'r(\d+)i(\d+)p(\d+)', prip)
-        if match:
-            data['prip'] = int(match.group(1)), int(match.group(2)), int(match.group(3))
-        else:
-            data['prip'] = None
-    except KeyError:
-        data['prip'] = None
+    data['prip'] = None
+    keys = attributes['prip']
+    if isinstance(keys, str):
+        keys = [keys]
+    for key in keys:
+        if key in attrs:
+            prip = attrs[key]
+            match = re.search(r'r(\d+)i(\d+)p(\d+)(f\d+)?', prip)
+            if match:
+                data['prip'] = int(match.group(1)), int(match.group(2)), int(match.group(3))
+                break
 
     for key in ['realization', 'physics', 'initialization']:
         try:
@@ -122,7 +144,6 @@ def _get_attributes_from_filename(filename, patterns):
             break
     else:  # no match
         return {}, False
-    print('MATCH', pattern, match)
 
     data['experiment'] = match.group('experiment')
     data['model'] = match.group('model')
