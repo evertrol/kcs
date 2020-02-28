@@ -13,37 +13,21 @@ of input data, if e.g. the requested range is large.)
 
 """
 
-import sys
-import argparse
 import logging
-import pathlib
 from datetime import datetime, timedelta
-import itertools
 import numpy as np
 import pandas as pd
 import iris
 from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
-import kcs.utils.argparse
 import kcs.utils.logging
-from kcs.utils.atlist import atlist
 import kcs.utils.attributes
 import kcs.utils.constraints
 
 
 REFERENCE_PERIOD = (1981, 2010)
 
-# If we run as a runnable module, use a more appropriate logger name
-logname = 'kcs.distribution' if __name__ == '__main__' else __name__
-logger = logging.getLogger(logname)
-
-
-def num2date(coord, index=None):
-    """DUMMY DOCSTRING"""
-    if index is None:
-        return cftime.num2date(coord.points, str(coord.units), coord.units.calendar)
-    return cftime.num2date(coord.points[index], str(coord.units),
-                           coord.units.calendar)
+logger = logging.getLogger(__name__)
 
 
 def read_data(paths, info_from=('attributes', 'filename'),
@@ -57,6 +41,14 @@ def read_data(paths, info_from=('attributes', 'filename'),
         attributes=attributes, filename_pattern=filename_pattern)
 
     return dataset
+
+
+def num2date(coord, index=None):
+    """DUMMY DOCSTRING"""
+    if index is None:
+        return cftime.num2date(coord.points, str(coord.units), coord.units.calendar)
+    return cftime.num2date(coord.points[index], str(coord.units),
+                           coord.units.calendar)
 
 
 def extract_season(cubes, season):
@@ -100,7 +92,7 @@ def average_year(cubes, season=None):
     return averages
 
 
-def calc_reference_values(dataset, reference_period, normby='run'):
+def calc_reference_values(cubes, reference_period, normby='run'):
     """Calculate the reference values for each cube
 
     If normby is not 'run', the individual reference values are averaged, so that each run
@@ -110,7 +102,7 @@ def calc_reference_values(dataset, reference_period, normby='run'):
 
     constraint = iris.Constraint(year=kcs.utils.constraints.RangeConstraint(*reference_period))
     values = []
-    for cube in dataset['cube']:
+    for cube in cubes:
         if not cube.coords('year'):
             iris.coord_categorisation.add_year(cube, 'time')
         mean = constraint.extract(cube)
@@ -206,8 +198,50 @@ def calc(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
     return scenarios
 
 
+def normalize_average_dataset(cubes, season=None, average_years=True, relative=False,
+                              reference_period=REFERENCE_PERIOD):
+    """Normalize and average a given iterable of cubes
+
+    The dataset is normalized by, and averaged across, its individual
+    ensemble runs. Thus, this works best (only), if the dataset
+    belongs to the same model and experiment, and has no other
+    ensemble variations other than its realization.
+
+    The dataset should already be concatenated across the historical
+    and future experiment, if necessary.
+
+    Each Iris cube inside the dataset should have a scalar realization
+    coordinate, with its value given the realization number. If not,
+    these are added on the fly, equal to the iteration index of the
+    cubes.
+
+    """
+
+    if season:
+        cubes = extract_season(dataset, season)
+    if average_years:
+        cubes = average_year(cubes, season=season)
+    refvalues = calc_reference_values(
+        cubes, reference_period=reference_period, normby='run')
+    cubes = normalize(cubes, refvalues, relative=relative)
+
+    for i, cube in enumerate(cubes):
+        if not cube.coords('realization'):
+            coord = iris.coords.AuxCoord(
+                i, standard_name='realization', long_name='realization',
+                var_name='realization')
+            cube.add_aux_coord(coord)
+
+    cubes = iris.cube.CubeList(cubes)
+    equalise_attributes(cubes)
+    cube2d = cubes.merge_cube()
+    mean = cube2d.collapsed('realization', iris.analysis.MEAN)
+    print(mean.coord('year'))
+    return mean
+
+
 def run(dataset, percentiles, scenarios, season=None, average_years=True,
-        relative=False, reference_period=REFERENCE_PERIOD, normby='run',
+        relative=False, reference_period=REFERENCE_PERIOD,
         timespan=30, rolling_mean=0, rounding=None):
     """Calculate the percentile yearly change distribution for the input data
 
@@ -226,81 +260,9 @@ def run(dataset, percentiles, scenarios, season=None, average_years=True,
 
     """
 
-    if season:
-        dataset['cube'] = extract_season(dataset['cube'], season)
-    if average_years:
-        dataset['cube'] = average_year(dataset['cube'], season=season)
-    refvalues = calc_reference_values(
-        dataset, reference_period=reference_period, normby=normby)
-    dataset['cubes'] = normalize(dataset['cube'], refvalues, relative=relative)
-
-    cubes = iris.cube.CubeList(dataset['cubes'])
-    equalise_attributes(cubes)
-    cube2d = cubes.merge_cube()
-    mean = cube2d.collapsed('realization', iris.analysis.MEAN)
-    mean = mean.aggregated_by('year', iris.analysis.MEAN)
+    mean = normalize_average_dataset(dataset['cube'], season, average_years,
+                                     relative=relative, reference_period=reference_period)
 
     steering = calc(mean, percentiles, scenarios, timespan=timespan,
                     rolling_mean=rolling_mean, rounding=rounding)
     return steering
-
-
-def parse_args():
-    """DUMMY DOC-STRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
-                                     conflict_handler='resolve')
-    parser.add_argument('csv', help="CSV file with distribution percentiles.")
-    parser.add_argument('files', nargs='+', help="EC-EARTH datasets")
-    parser.add_argument('--scenario', required=True, nargs=3, action='append',
-                        help="Specify a scenario. Takes three arguments: name, "
-                        "epoch and percentile. This option is required, and can "
-                        "be used multiple times")
-    parser.add_argument('--outfile', help="Output CSV file to write the steering "
-                        "table to. If not given, write to standard output.")
-    parser.add_argument('--timespan', type=int, default=30,
-                        help="Timespan around epoch(s) given in the scenario(s), "
-                        "in years. Default is 30 years.")
-    parser.add_argument('--rolling-mean', default=0, type=int,
-                        help="Apply a rolling mean to the percentile distribution "
-                        "before computing the scenario temperature increase match. "
-                        "Takes one argument, the window size (in years).")
-    parser.add_argument('--rounding', type=float,
-                        help="Round the matched temperature increase to a multiple "
-                        "of this value, which should be a positive floating point "
-                        "value. Default is not to round")
-    args = parser.parse_args()
-    args.paths = [pathlib.Path(filename) for filename in args.files]
-    args.scenarios = [dict(zip(('name', 'epoch', 'percentile'), scenario))
-                      for scenario in args.scenario]
-    if args.rounding is not None:
-        if args.rounding <= 0:
-            raise ValueError('--rounding should be a positive number')
-    return args
-
-
-def main():
-    """DUMMY DOCSTRING"""
-    args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
-    logger.debug("%s", " ".join(sys.argv))
-    logger.debug("Args: %s", args)
-
-    paths = list(itertools.chain.from_iterable(atlist(path) for path in args.paths))
-    dataset = read_data(paths)
-
-    percentiles = pd.read_csv(args.csv, index_col=0)
-    percentiles.index = pd.to_datetime(percentiles.index)
-
-    steering = run(dataset, percentiles, args.scenarios, timespan=args.timespan,
-                   rolling_mean=args.rolling_mean, rounding=args.rounding)
-    steering = pd.DataFrame(steering)
-
-    if args.outfile:
-        steering.to_csv(args.outfile, index=False)
-    else:
-        print(steering)
-    logger.info("Done processing: steering table = %s", steering)
-
-
-if __name__ == '__main__':
-    main()
