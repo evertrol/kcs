@@ -46,6 +46,12 @@ def get_realization_from_path(path):
     return realization
 
 
+def get_varname(path):
+    match = re.search('^(?P<var>[a-z]+)_.*$', path.name)
+    if match:
+        return match.group('var')
+
+
 def process_single(path, areas, targetgrid=None, save_result=True,
                    average_area=True, gridscheme='area', template=TEMPLATE,
                    mp=False, tempdir=None, ignore_common_warnings=False):
@@ -59,6 +65,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
         realization = get_realization_from_path(path)
     logger.debug("Realization %d for %s", realization, path)
 
+    varname = get_varname(path)
     with warnings.catch_warnings():
         if ignore_common_warnings:
             warnings.filterwarnings("ignore", category=UserWarning,
@@ -67,7 +74,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
             warnings.filterwarnings("ignore", category=UserWarning,
                                     message="Using DEFAULT_SPHERICAL_EARTH_RADIUS")
         logger.info('Reading %s', path)
-        cube = kcs.utils.io.load_cube(path)
+        cube = kcs.utils.io.load_cube(path, variable_name=varname)
 
     logger.info('Fixing coordinates')
     # EC-EARTH data has only 'months since', not 'days since'; iris doesn't accept that.
