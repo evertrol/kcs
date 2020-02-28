@@ -199,9 +199,9 @@ def calc(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
         # We simply equate that to Dec 12 of the previous year, and thus make the
         # end-year of the period inclusive
         scenarios[i]['period'] = period[0], period[1]-1
-        dataset_delta_t = cube[index].data
-        scenarios[i]['dataset_delta_t'] = dataset_delta_t
-        scenarios[i]['factor'] = delta_t / dataset_delta_t
+        model_delta_t = cube[index].data
+        scenarios[i]['model_delta_t'] = model_delta_t
+        scenarios[i]['factor'] = delta_t / model_delta_t
 
     return scenarios
 
