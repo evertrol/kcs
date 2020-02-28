@@ -10,10 +10,11 @@ F-tools.
 """
 
 from pathlib import Path
+import os
 import shlex
 
 
-def atlist(path, maxnesting=10):
+def atlist(path, maxnesting=10, expandvars=True):
     """Return an iterator over the list of paths given in ``path``
 
     ``path`` can be a string or a ``pathlib.Path`` object. If the name
@@ -32,6 +33,12 @@ def atlist(path, maxnesting=10):
     proper path with respect to the calling script.
 
     Path names should be one name per line.
+
+    Environment variables and user home directory indicators (`~` or
+    `~user`) are expanded, unless `expandvars=False`. Note that this
+    parameter toggles both the behaviour for environment variables and
+    user home directory expansions. This makes '@$DATA/files.list' or
+    '@~/files.list' valid input at-lists.
 
     Path names inside an at-list are shell-escaped using the ``shlex``
     module. Whitespace, either leading, trailing or in the middle, is
@@ -65,6 +72,11 @@ def atlist(path, maxnesting=10):
     _aspath = isinstance(path, Path)
 
     s_path = str(path)
+
+    if expandvars:
+        s_path = os.path.expandvars(s_path)
+        s_path = os.path.expanduser(s_path)
+
     if s_path.startswith('@'):
         s_path = s_path[1:]
     else:
@@ -75,7 +87,7 @@ def atlist(path, maxnesting=10):
         yield path
         return  # quit iterator
 
-    with open(s_path) as fh:
+    with open(s_path) as fh:  # # pylint: disable=invalid-name
         for line in fh:
             if line.startswith('#'):
                 continue
@@ -85,7 +97,7 @@ def atlist(path, maxnesting=10):
                 newpath = f'@{newpath}'
                 if _aspath:
                     newpath = Path(newpath)
-                yield from atlist(newpath, maxnesting=maxnesting-1)
+                yield from atlist(newpath, maxnesting=maxnesting-1, expandvars=expandvars)
                 continue
             outpath = ''.join(shlex.split(line))
             yield Path(outpath) if _aspath else outpath
