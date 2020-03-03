@@ -11,6 +11,10 @@ should be close to 1. (This value may be significant, since the
 year-range is rounded to years, or one may have to go beyond the range
 of input data, if e.g. the requested range is large.)
 
+Example usage:
+
+$ python -m kcs.steering  distribution-percentiles.csv  data/ecearth/tas-global-averaged/tas_Amon_ECEARTH23_rcp85_186001-210012_*.nc --scenario G2050 2050 10 --scenario W2050 2050 90 --scenario G2085 2085 10 --scenario W2085 2085 90  --rolling-mean 10 --outfile steering.csv
+
 """
 
 import sys

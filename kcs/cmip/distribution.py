@@ -4,6 +4,10 @@ datasets.
 The input datasets should correspond to a single variable, e.g., the
 air temperature ('tas').
 
+Example usage:
+
+$ python -m kcs.cmip.distribution  @cmip6-tas-global-averaged.atlist  --on-no-match=randomrun -vvv  --norm-by=run  --reference-period 1991 2020
+
 """
 
 import sys
@@ -426,10 +430,11 @@ def parse_args():
                         "'physics_version', 'initialization_method', 'experiment', 'model_id'")
     parser.add_argument('--on-no-match', choices=['error', 'remove', 'randomrun', 'random'],
                         default='error', help="What to do with a (future) experiment run that "
-                        "has no matching run. 'error' raise an exception, 'remove' removes the "
-                        "run. 'randomrun' picks a random history run with the same 'physics' and "
-                        "'initialization' values (but a different 'realization' value), while "
-                        "'random' picks a random history run from all ensembles for that model.")
+                        "has no matching run. 'error' raise an exception, 'remove' removes "
+                        "(ignores) the run. 'randomrun' picks a random history run with the "
+                        "same 'physics' and 'initialization' values (but a different "
+                        "'realization' value), while 'random' picks a random history run from "
+                        "all ensembles for that model.")
     parser.add_argument('--average-experiments', action='store_true', help="Average ensemble "
                         "runs over their model-experiment, before calculating percentiles.")
     args = parser.parse_args()
