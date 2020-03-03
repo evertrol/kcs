@@ -1,2 +1,8 @@
 # Python byte-compiled files
 *.pyc
+
+# Input and output data
+*.csv
+*.pdf
+*.png
+*.list
