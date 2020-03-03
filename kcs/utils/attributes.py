@@ -30,6 +30,7 @@ ATTRIBUTES = {
     'initialization': "initialization_method",
     'physics': "physics_version",
     'prip': ["parent_experiment_rip", "parent_variant_label"],
+    'var': ["variable_id"],
 }
 ATTRIBUTES_DEFAULT = {
     'experiment': "",
@@ -38,17 +39,6 @@ ATTRIBUTES_DEFAULT = {
     'initialization': 0,
     'physics': 0,
     'prip': None,
-}
-# Note that \w+ can't be used, since this includes the underscore
-# Hence, sets like [-A-Za-z0-9]+ are used
-FILENAME_PATTERNS = {
-    'var': r'^(?P<var>[a-z]+)_',
-    'mip': r'^[a-z]+_(?P<mip>[A-Za-z]+)_',
-    'model': r'^[a-z]+_[A-Za-z]+_(?P<model>[-A-Za-z0-9]+)_',
-    'experiment': r'^[a-z]+_[A-Za-z]+_[-A-Za-z0-9]+_(?P<experiment>[A-Za-z0-9]+)_',
-    'realization': r'_r(?P<realization>\d+)i\d+p\d+_',
-    'initialization': r'_r\d+i(?P<initialization>\d+)p\d+_',
-    'physics': r'_r\d+i\d+p(?P<physics>\d+)_',
 }
 # List of filename regex patterns
 # First is for ESMValTool
@@ -87,7 +77,15 @@ p(?P<physics>\d+)\
 f\d+_\
 gn_\
 .*\.nc$\
-"""
+""",
+# Special (EC-EARTH concatenated runs)
+"""^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+.*\.nc$\
+""",
 ]
 
 logger = logging.getLogger(__name__)
@@ -109,6 +107,14 @@ def _get_attributes_from_cube(attrs, attributes):
     for key in keys:
         if key in attrs:
             data['model'] = attrs[key]
+            break
+
+    keys = attributes['var']
+    if isinstance(keys, str):
+        keys = [keys]
+    for key in keys:
+        if key in attrs:
+            data['var'] = attrs[key]
             break
 
     data['prip'] = None
@@ -147,8 +153,12 @@ def _get_attributes_from_filename(filename, patterns):
 
     data['experiment'] = match.group('experiment')
     data['model'] = match.group('model')
+    data['var'] = match.group('var')
     for key in ['realization', 'physics', 'initialization']:
-        data[key] = int(match.group(key))
+        try:
+            data[key] = int(match.group(key))
+        except IndexError:
+            pass
 
     return data, found
 
