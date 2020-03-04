@@ -1,0 +1,38 @@
+kcs requires four packages to be installed: scitools-iris, Pandas,
+h5py and toml.  Installing scitools-iris will also bring in NumPy,
+SciPy, Matplotlib, Dask, Cartopy, NetCDF4 and a few minor packages, as
+its dependencies.
+
+Since several of Iris's dependencies depend on various C libraries, it
+may be better, and easier, to use Conda to install scitools-iris
+(Conda can also install h5py and toml, but you can also use pip in the
+Conda environment to install these): this will guarantee that the
+correct version of the C libraries and their dependencies are
+installed.
+
+You can read the Iris installation guide at
+https://scitools.org.uk/iris/docs/latest/installing.html .
+
+Or simply download Miniconda from
+https://docs.conda.io/en/latest/miniconda.html (pick the Python 3
+version) and install that. With Miniconda installed, and the `conda`
+command available, you can run:
+
+    conda install --name kcs --channel conda-forge iris h5py toml
+	conda activate kcs
+
+(or pick your favourite environment name.)
+
+kcs itself is not available through Conda. Instead, just install it
+using `pip` in the Conda environment:
+
+    pip install kcs
+
+But if you want the most recent version (possibly with bug-fixes),
+install it directly from its source repository:
+
+    pip install git+https://github.com/evertrol/kcs.git
+
+You may need to add `--upgrade`, `--force-reinstall` and `--no-deps`
+to force an upgrade, especially if the change in the repository was
+minor and the package version was not upgraded.
