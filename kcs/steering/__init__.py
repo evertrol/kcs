@@ -236,7 +236,7 @@ def normalize_average_dataset(cubes, season=None, average_years=True, relative=F
     equalise_attributes(cubes)
     cube2d = cubes.merge_cube()
     mean = cube2d.collapsed('realization', iris.analysis.MEAN)
-    print(mean.coord('year'))
+
     return mean
 
 

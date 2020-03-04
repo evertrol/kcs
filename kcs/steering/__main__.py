@@ -57,7 +57,8 @@ def parse_args():
     parser.add_argument('--scenario', required=True, nargs=3, action='append',
                         help="Specify a scenario. Takes three arguments: name, "
                         "epoch and percentile. This option is required, and can "
-                        "be used multiple times")
+                        "be used multiple times. Examples would '--scenario G 2050 10', "
+                        "'--scenario H 2085 90'.")
     parser.add_argument('--outfile', help="Output CSV file to write the steering "
                         "table to. If not given, write to standard output.")
     parser.add_argument('--timespan', type=int, default=30,
