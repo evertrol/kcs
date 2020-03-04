@@ -166,19 +166,6 @@ def parse_args():
     return args
 
 
-def setup_logging(verbosity=0):
-    """DUMMY DOCSTRING"""
-    levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-    level = levels[max(0, min(verbosity, len(levels)))]
-    logger.setLevel(level)
-    handler = logging.StreamHandler()
-    handler.setLevel(level)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                                  datefmt="%Y-%m-%dT%H:%M:%S")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()

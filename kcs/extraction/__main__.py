@@ -68,22 +68,6 @@ def parse_args():
     return args
 
 
-def setup_logging(verbosity=0):
-    levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
-    level = levels[max(0, min(verbosity, len(levels)))]
-    logger.setLevel(level)
-    handler = logging.StreamHandler()
-    handler.setLevel(level)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                                  datefmt="%Y-%m-%dT%H:%M:%S")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    kcs_logger = logging.getLogger('kcs')
-    kcs_logger.setLevel(level)
-    kcs_logger.addHandler(handler)
-
-
 def main():
     args = parse_args()
     kcs.utils.logging.setup(args.verbosity)
