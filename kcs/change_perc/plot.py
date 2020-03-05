@@ -64,23 +64,25 @@ def plot_cmip(data, colors=None, alphas=None, perc_ranges=None,
     return figure
 
 
-def plot_runs(percs, columns=None, color='black', zorder=5, figure=None):
-    """DUMMY DOCSTRING"""
+def plot_runs(percs, columns=None, only_mean=False, color='black', zorder=5, figure=None):
+    """Plot individual runs, and their mean"""
     if figure is None:
         figure = plt.gcf()
 
     if (columns and columns[0] == 'mean') or not columns:
-        for mean in percs['mean']:
-            plt.plot([1], [mean], 'o', lw=0.5, ms=4, color=color, zorder=zorder)
+        if not only_mean:
+            for mean in percs['mean']:
+                plt.plot([1], [mean], 'o', lw=0.5, ms=4, color=color, zorder=zorder)
         # Plot the mean of the means
         mean = percs['mean'].mean()
         plt.plot([0.5, 1.5], [mean, mean], '-', lw=6, color=color, zorder=zorder)
     columns = [column for column in columns if column != 'mean']
     # pragma pylint: disable=invalid-name
-    for _, row in percs.iterrows():
-        data = row[columns]
-        x = list(range(2, 2+len(columns)))
-        plt.plot(x, data, '-o', lw=0.5, ms=4, color=color, zorder=zorder+1)
+    if not only_mean:
+        for _, row in percs.iterrows():
+            data = row[columns]
+            x = list(range(2, 2+len(columns)))
+            plt.plot(x, data, '-o', lw=0.5, ms=4, color=color, zorder=zorder+1)
     mean = percs[columns].mean(axis=0)
     x = list(range(2, 2+len(columns)))
     plt.plot(x, mean, '-', lw=6, color=color, zorder=zorder+1)
@@ -130,7 +132,7 @@ def plot_finish(colors=None,
     return figure
 
 
-def run(data, labels, limits, columns, xlabels, scenarios=None):
+def run(data, labels, limits, columns, xlabels, scenarios=None, only_scenario_mean=False):
     """Do all the work"""
 
     if scenarios is None:
@@ -143,7 +145,8 @@ def run(data, labels, limits, columns, xlabels, scenarios=None):
     for name, runs in scenarios.items():
         color = COLORS.get(name, 'black')
         zorder += 2
-        figure = plot_runs(runs, columns, color=color, zorder=zorder, figure=figure)
+        figure = plot_runs(runs, columns, only_mean=only_scenario_mean,
+                           color=color, zorder=zorder, figure=figure)
 
     plot_finish(colors=None, text=labels['text'], epoch=labels['epoch'],
                 xlabel=labels['x'], ylabel=labels['y'], title=labels['title'],
@@ -167,6 +170,8 @@ def parse_args():
                         "two argument: a scenario name (e.g., 'G', or 'W_L') and a "
                         "CSV file that contains a list of runs: it should "
                         "at least contain columns corresponding to --columns.")
+    parser.add_argument('--only-scenario-mean', action='store_true', help="Plot only the "
+                        "mean of the individual scenario runs (if given).")
     parser.add_argument('--title', help="Plot title.")
     parser.add_argument('--text', help="Text in bottom-left corner. Can be used as "
                         "alternative to a plot title.")
@@ -205,7 +210,7 @@ def main():
 
     run(data, labels, limits=args.ylimits,
         columns=args.columns, xlabels=args.xlabels,
-        scenarios=scenarios)
+        scenarios=scenarios, only_scenario_mean=args.only_scenario_mean)
 
     plt.tight_layout()
     plt.savefig(args.output, bbox_inches='tight')
