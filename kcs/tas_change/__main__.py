@@ -6,7 +6,8 @@ air temperature ('tas').
 
 Example usage:
 
-$ python -m kcs.cmip.distribution  @cmip6-tas-global-averaged.atlist  --on-no-match=randomrun -vvv  --norm-by=run  --reference-period 1991 2020
+$ python -m kcs.cmip.distribution  @cmip6-tas-global-averaged.atlist  \
+    --on-no-match=randomrun -vvv  --norm-by=run  --reference-period 1991 2020
 
 """
 
@@ -370,13 +371,6 @@ def run(dataset, historical_key, season=None, average_years=True,
     dataset['reference_value'] = reference_values
     dataset = normalize(dataset, relative=relative, normby=normby)
 
-    ## Print statement for verification
-    #with pd.option_context('max_rows', 999):
-    #    for _, group in dataset.groupby(['model', 'experiment', 'matched_exp']):
-    #        columns = ['model', 'experiment', 'realization', 'initialization', 'physics']
-    #        print(group.sort_values(columns)[
-    #            columns + ['prip', 'index_match_run', 'reference_value', 'matched_exp']])
-
     percentiles = calc_percentiles(dataset, period=period,
                                    average_experiments=average_experiments)
 
@@ -388,7 +382,7 @@ def parse_args():
     parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
                                      conflict_handler='resolve')
     parser.add_argument('files', nargs='+', help="Input file paths")
-    parser.add_argument('--outfile', default="distribution-percentiles.csv",
+    parser.add_argument('--outfile', required=True, default="distribution-percentiles.csv",
                         help="Output CSV file with the distribution "
                         "percentiles-versus-year table. "
                         "The default is 'distribution-percentiles.csv'")

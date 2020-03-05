@@ -1,4 +1,13 @@
-"""DUMMY DOCSTRING"""
+"""
+
+Usage example:
+
+$ python -m kcs.tas_change.plot  distribution-percentiles.csv cmip6.png \
+    --xrange 1950 2100    --ylabel 'Temperature change [${}^{\circ}$]' \
+    --title 'Global year temperature change'  --smooth 7 --yrange -1 6
+
+"""
+
 import sys
 from datetime import datetime
 import logging
