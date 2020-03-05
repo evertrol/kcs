@@ -36,9 +36,9 @@ from . import run
 
 NPROC = 1
 CONTROL_PERIOD = (1981, 2010)
-N1 = 1000
+NSTEP1 = 1000
 N2 = 50
-N3 = 8
+NSTEP3 = 8
 NSAMPLE = 10_000
 NSECTIONS = 6
 
@@ -134,9 +134,9 @@ def parse_args():
                         help="Label and percentage of winter precipitation increase per degree. "
                         "For example, L 4, or H 8. The label should correspond to the third value "
                         "in the --scenarion option, if given.")
-    parser.add_argument('--n1', type=int, default=N1,
+    parser.add_argument('--nstep1', type=int, default=NSTEP1,
                         help="number of S1 resamples to keep")
-    parser.add_argument('--n3', type=int, default=N3,
+    parser.add_argument('--nstep3', type=int, default=NSTEP3,
                         help="number of S3 resamples to keep")
     parser.add_argument('--nsample', type=int, default=NSAMPLE,
                         help="Monte Carlo sampling number")
@@ -167,7 +167,7 @@ def parse_args():
         penalties = toml.load(fh)
     penalties = {int(key): value for key, value in penalties['penalties'].items()}
     # Fill up the penalty dict
-    for i in range(max(penalties.keys())+1, args.n3+1):
+    for i in range(max(penalties.keys())+1, args.nstep3+1):
         penalties[i] = math.inf
     args.penalties = penalties
 
@@ -191,7 +191,7 @@ def main():
         ranges = toml.load(fh)
 
     run(dataset, steering_table, ranges, args.penalties,
-        args.n1, args.n3, args.nsample, args.nsections, args.control_period,
+        args.nstep1, args.nstep3, args.nsample, args.nsections, args.control_period,
         relative=args.relative, nproc=args.nproc)
 
 

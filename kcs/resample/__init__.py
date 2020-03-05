@@ -20,9 +20,9 @@ import iris
 
 NPROC = 1
 ALLSEASONS = ['djf', 'mam', 'jja', 'son']
-N1 = 1000
-N2 = 50
-N3 = 9
+NSTEP1 = 1000
+NSTEP2 = 50
+NSTEP3 = 8
 NSAMPLE = 10_000
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 CONTROL_PERIOD = (1981, 2010)
@@ -246,8 +246,7 @@ def calculate_s2(means, indices, scenarios):
     return s2_indices
 
 
-# pylint: disable=invalid-name
-def calculate_s3(indices_dict, penalties, n3=N3, nsample=NSAMPLE,
+def calculate_s3(indices_dict, penalties, nstep3=NSTEP3, nsample=NSAMPLE,
                  minimum_penalty=None):
     """Calculate the subset S3: find a subset with the least re-use of
     segments, using random sampling"""
@@ -257,18 +256,18 @@ def calculate_s3(indices_dict, penalties, n3=N3, nsample=NSAMPLE,
     s3_indices = {}
     rng = np.random.default_rng()   # pylint: disable=no-member
     for period, indices in indices_dict.items():
-        n = len(indices)
-        m = math.factorial(n) // math.factorial(n3) // math.factorial(n - n3)
+        n = len(indices)  # pylint: disable=invalid-name
+        m = math.factorial(n) // math.factorial(nstep3) // math.factorial(n - nstep3)
         logger.debug("Number of combinations for the %s period = %d", period, m)
         best = np.inf
         for i in range(nsample):
-            choice = rng.choice(indices, size=n3, replace=False)
+            choice = rng.choice(indices, size=nstep3, replace=False)
 
             penalty = 0
             for column in choice.T:
                 _, counts = np.unique(column, return_counts=True)
-                for c in counts:
-                    penalty += penalties[c]
+                for count in counts:
+                    penalty += penalties[count]
             if penalty <= best:
                 best = penalty
                 s3_indices[period] = choice
@@ -282,7 +281,7 @@ def calculate_s3(indices_dict, penalties, n3=N3, nsample=NSAMPLE,
 
 
 def find_resamples(indices, means, precip_change, ranges, penalties,
-                   n1=N1, n3=N3, nsample=NSAMPLE, nproc=NPROC):
+                   nstep1=NSTEP1, nstep3=NSTEP3, nsample=NSAMPLE, nproc=NPROC):
     """Find the (best) resamples
 
     This does the actual work:
@@ -305,14 +304,14 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     logger.debug("Calculating S1")
     logger.debug("Precipitation change: %.1f", precip_change)
     s1_indices = calculate_s1(means, indices, precip_change, nproc=nproc)
-    s1_indices['control'] = s1_indices['control'][:n1]
-    s1_indices['future'] = s1_indices['future'][:n1]
+    s1_indices['control'] = s1_indices['control'][:nstep1]
+    s1_indices['future'] = s1_indices['future'][:nstep1]
 
     s2_indices = calculate_s2(means, s1_indices, ranges)
     logger.debug("The S2 subset has %d & %d indices for the control & future periods, resp.",
                  len(s2_indices['control']), len(s2_indices['future']))
 
-    s3_indices = calculate_s3(s2_indices, penalties, n3=n3, nsample=nsample)
+    s3_indices = calculate_s3(s2_indices, penalties, nstep3=nstep3, nsample=nsample)
 
 
     return s3_indices
@@ -327,7 +326,7 @@ def save_indices_h5(filename, indices):
             group = h5file[name]
         except KeyError:
             group = h5file.create_group(name)
-        for k, v in value['meta'].items():
+        for k, v in value['meta'].items():  # pylint: disable=invalid-name
             group.attrs[k] = json.dumps(v) if isinstance(v, (dict, list)) else v
         if 'control' in group:
             del group['control']
@@ -405,8 +404,8 @@ def save_resamples(filename, diffs, as_csv=True):
                 group.create_dataset('mean', data=diff.mean(axis=0))
                 group.create_dataset('std', data=diff.std(axis=0))
                 # pylint: disable=no-member
-                ds = group.create_dataset('keys', (len(STATS),), dtype=h5py.string_dtype())
-                ds[:] = STATS
+                dataset = group.create_dataset('keys', (len(STATS),), dtype=h5py.string_dtype())
+                dataset[:] = STATS
 
                 assert len(STATS) == len(diff.mean(axis=0))
 
@@ -417,7 +416,7 @@ def save_resamples(filename, diffs, as_csv=True):
 
 
 def run(dataset, steering_table, ranges, penalties,
-        n1=N1, n3=N3, nsample=NSAMPLE,
+        nstep1=NSTEP1, nstep3=NSTEP3, nsample=NSAMPLE,
         nsections=NSECTIONS, control_period=CONTROL_PERIOD,
         relative=None, nproc=NPROC):
     """DUMMY DOCSTRING"""
@@ -452,10 +451,10 @@ def run(dataset, steering_table, ranges, penalties,
 
         rrange = ranges[scenario][subscenario][epoch]
         logger.info("Processing %s_%s - %s %s, %.2f pr", scenario, subscenario, epoch,
-                     period, precip_change)
+                    period, precip_change)
         final_indices = find_resamples(data[mainkey], indices[mainkey], means[mainkey],
                                        precip_change, rrange, columns, penalties,
-                                       n1, n3, nsample, nproc)
+                                       nstep1, nstep3, nsample, nproc)
 
         attrs = {
             'scenario': scenario, 'subscenario': subscenario, 'epoch': epoch,
