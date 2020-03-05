@@ -1,0 +1,139 @@
+[[W.H.2085]]
+var = "pr"
+season = "jja"
+control = [60, 100]
+future = [0, 40]
+[[W.H.2085]]
+var = "tas"
+season = "djf"
+control = [20, 50]
+future = [50, 80]
+[[W.H.2085]]
+var = "tas"
+season = "jja"
+control = [10, 50]
+future = [60, 100]
+
+
+[[W.H.2050]]
+var = "pr"
+season = "jja"
+control = [70, 100]
+future = [0, 40]
+[[W.H.2050]]
+var = "tas"
+season = "djf"
+control = [10, 40]
+future = [60, 90]
+[[W.H.2050]]
+var = "tas"
+season = "jja"
+control = [10, 50]
+future = [60, 100]
+
+
+[[W.L.2085]]
+scenario = "W"
+epoch = 2085
+precip = "L"
+[[W.L.2085]]
+var = "pr"
+season = "jja"
+control = [0, 30]
+future = [70, 100]
+[[W.L.2085]]
+var = "tas"
+season = "djf"
+control = [50, 90]
+future = [10, 50]
+[[W.L.2085]]
+var = "tas"
+season = "jja"
+control = [0, 100]
+future = [10, 50]
+
+
+[[W.L.2050]]
+var = "pr"
+season = "jja"
+control = [0, 30]
+future = [70, 100]
+[[W.L.2050]]
+var = "tas"
+season = "djf"
+control = [50, 80]
+future = [20, 50]
+[[W.L.2050]]
+var = "tas"
+season = "jja"
+control = [0, 100]
+future = [0, 50]
+
+
+
+[[G.H.2085]]
+var = "pr"
+season = "jja"
+control = [70, 100]
+future = [0, 30]
+[[G.H.2085]]
+var = "tas"
+season = "djf"
+control = [10, 40]
+future = [60, 90]
+[[G.H.2085]]
+var = "tas"
+season = "jja"
+control = [10, 50]
+future = [60, 100]
+
+
+[[G.H.2050]]
+var = "pr"
+season = "jja"
+control = [65, 100]
+future = [0, 35]
+[[G.H.2050]]
+var = "tas"
+season = "djf"
+control = [10, 40]
+future = [60, 90]
+[[G.H.2050]]
+var = "tas"
+season = "jja"
+control = [10, 50]
+future = [60, 100]
+
+
+[[G.L.2085]]
+var = "pr"
+season = "jja"
+control = [10, 40]
+future = [60, 90]
+[[G.L.2085]]
+var = "tas"
+season = "djf"
+control = [50, 80]
+future = [20, 50]
+[[G.L.2085]]
+var = "tas"
+season = "jja"
+control = [0, 100]
+future = [0, 50]
+
+
+[[G.L.2050]]
+var = "pr"
+season = "jja"
+control = [25, 55]
+future = [45, 75]
+[[G.L.2050]]
+var = "tas"
+season = "djf"
+control = [50, 80]
+future = [20, 50]
+[[G.L.2050]]
+var = "tas"
+season = "jja"
+control = [0, 100]
+future = [0, 50]

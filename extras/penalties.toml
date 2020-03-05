@@ -1,0 +1,13 @@
+[penalties]
+# Penalties for number of (multiple) occurrences of run-semgent in resamples.
+# Starts from 1 occurrence, that is, no duplicate.
+# Only give the number of occurrences that have a penalty less than
+# infinity, including a 0.0 penalty (for e.g. a single, `1`,
+# occurrence).
+# All penalties should be floating point numbers.
+# Has the form `n-occurrences` = `penalty-value`.
+1 = 0.0
+2 = 0.0
+3 = 1.0
+4 = 5.0
+# 5 and more yield an infinite penalty value
