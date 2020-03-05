@@ -16,7 +16,7 @@ try:
     from iris.util import equalise_attributes
 except ImportError:
     from iris.experimental.equalise_cubes import equalise_attributes
-import plotting
+import kcs.plotting
 
 
 pd.set_option('display.max_rows', None)
@@ -435,7 +435,7 @@ def run(basedir, var, area, season, options=None):
     if oplot.get('plot'):
         figure = plt.figure(figsize=(6, 6))
         perc_ranges = [(10, 90), (25, 75)]
-        plotting.plot_cmip5_percentiles(perc_distr, var, area, season, year,
+        kcs.plotting.plot_cmip5_percentiles(perc_distr, var, area, season, year,
                                         perc_ranges=perc_ranges, zorder=2)
 
     ecpercs = None
@@ -449,15 +449,15 @@ def run(basedir, var, area, season, options=None):
             ecpercs[key+'mean'] = {col: ecpercs[key][col].mean() for col in STATS}
 
         if oplot.get('plot'):
-            plotting.plot_ecearth_percentiles(ecpercs, scenarios, zorder=5)
+            kcs.plotting.plot_ecearth_percentiles(ecpercs, scenarios, zorder=5)
 
     if oplot.get('plot'):
-        plotting.plot_finish_percentiles(var, season, year, scenarios,
-                                         text=oplot.get('text'),
-                                         title=oplot.get('title'),
-                                         xlabel=oplot.get('xlabel'),
-                                         ylabel=oplot.get('ylabel'),
-                                         ylimits=oplot.get('ylimits'))
+        kcs.plotting.plot_finish_percentiles(var, season, year, scenarios,
+                                             text=oplot.get('text'),
+                                             title=oplot.get('title'),
+                                             xlabel=oplot.get('xlabel'),
+                                             ylabel=oplot.get('ylabel'),
+                                             ylimits=oplot.get('ylimits'))
 
         plt.tight_layout()
         filename = f"change-{var}-{area}-{season}-{year}.pdf"

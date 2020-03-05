@@ -1,4 +1,12 @@
-"""Overplot EC-EARTH scenario matches on top of CMIP tas distribution"""
+"""Overplot EC-EARTH scenario matches on top of CMIP tas distribution
+
+Usage example:
+
+$ python -m kcs.steering.plot distribution-percentiles.csv steering.csv output.png \
+    --ecearth-data @ecearth-tas-global.list --reference-epoch 1995 \
+    --ylabel 'Temperature increase [${}^{\circ}$]'  --smooth 10
+
+"""
 
 import sys
 from datetime import datetime
@@ -12,7 +20,7 @@ import pandas as pd
 import iris
 import kcs.utils.logging
 import kcs.utils.argparse
-from kcs.cmip.plotting import plot as cmipplot
+from kcs.tas_change.plot import plot as cmipplot
 from kcs.utils.atlist import atlist
 from . import read_data, normalize_average_dataset, num2date
 
