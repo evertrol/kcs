@@ -1,0 +1,135 @@
+[[W.H.2085]]
+var = "pr"
+season = "jja"
+control = [60.0, 100.0]
+future = [0.0, 40.0]
+[[W.H.2085]]
+var = "tas"
+season = "djf"
+control = [20.0, 50.0]
+future = [50.0, 80.0]
+[[W.H.2085]]
+var = "tas"
+season = "jja"
+control = [10.0, 50.0]
+future = [60.0, 100.0]
+
+
+[[W.H.2050]]
+var = "pr"
+season = "jja"
+control = [70.0, 100.0]
+future = [0.0, 40.0]
+[[W.H.2050]]
+var = "tas"
+season = "djf"
+control = [10.0, 40.0]
+future = [60.0, 90.0]
+[[W.H.2050]]
+var = "tas"
+season = "jja"
+control = [10.0, 50.0]
+future = [60.0, 100.0]
+
+
+[[W.L.2085]]
+var = "pr"
+season = "jja"
+control = [0.0, 30.0]
+future = [70.0, 100.0]
+[[W.L.2085]]
+var = "tas"
+season = "djf"
+control = [50.0, 90.0]
+future = [10.0, 50.0]
+[[W.L.2085]]
+var = "tas"
+season = "jja"
+control = [0.0, 100.0]
+future = [0.0, 50.0]
+
+
+[[W.L.2050]]
+var = "pr"
+season = "jja"
+control = [0.0, 30.0]
+future = [70.0, 100.0]
+[[W.L.2050]]
+var = "tas"
+season = "djf"
+control = [50.0, 80.0]
+future = [20.0, 50.0]
+[[W.L.2050]]
+var = "tas"
+season = "jja"
+control = [0.0, 100.0]
+future = [0.0, 50.0]
+
+
+
+[[G.H.2085]]
+var = "pr"
+season = "jja"
+control = [70.0, 100.0]
+future = [0.0, 30.0]
+[[G.H.2085]]
+var = "tas"
+season = "djf"
+control = [10.0, 40.0]
+future = [60.0, 90.0]
+[[G.H.2085]]
+var = "tas"
+season = "jja"
+control = [10.0, 50.0]
+future = [60.0, 100.0]
+
+
+[[G.H.2050]]
+var = "pr"
+season = "jja"
+control = [65.0, 100.0]
+future = [0.0, 35.0]
+[[G.H.2050]]
+var = "tas"
+season = "djf"
+control = [10.0, 40.0]
+future = [60.0, 90.0]
+[[G.H.2050]]
+var = "tas"
+season = "jja"
+control = [10.0, 50.0]
+future = [60.0, 100.0]
+
+
+[[G.L.2085]]
+var = "pr"
+season = "jja"
+control = [10.0, 40.0]
+future = [60.0, 90.0]
+[[G.L.2085]]
+var = "tas"
+season = "djf"
+control = [50.0, 80.0]
+future = [20.0, 50.0]
+[[G.L.2085]]
+var = "tas"
+season = "jja"
+control = [0.0, 100.0]
+future = [0.0, 50.0]
+
+
+[[G.L.2050]]
+var = "pr"
+season = "jja"
+control = [25.0, 55.0]
+future = [45.0, 75.0]
+[[G.L.2050]]
+var = "tas"
+season = "djf"
+control = [50.0, 80.0]
+future = [20.0, 50.0]
+[[G.L.2050]]
+var = "tas"
+season = "jja"
+control = [0.0, 100.0]
+future = [0.0, 50.0]
