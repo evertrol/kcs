@@ -43,7 +43,7 @@ def plot_ecearth(ecearth_data, relative=False, reference_period=REFERENCE_PERIOD
     dates = num2date(cube.coord('time'))
     dates = np.array([datetime(date.year, date.month, date.day) for date in dates],
                      dtype='datetime64')
-    plt.plot(dates, cube.data, zorder=6, label='EC-EARTH')
+    plt.plot(dates, cube.data, zorder=6, label='EC-EARTH', color='#669955')
 
 
 def plot_scenarios(scenarios, reference_epoch=None):
