@@ -1,8 +1,18 @@
-"""
-Example usage:
+"""Example usage:
 
 $ python -m kcs.change_perc.plot pr_change_2050_jja_nlpoint.csv pr_change_2050_jja_nlpoint.png \
     --epoch 2050 --text 'precip, DJF', --ytitle 'Change (%)' --ylimits -60 45
+
+
+To overplot a series of single runs for a model of interest, use the
+--scenario-run option, which takes a name and a CSV file (can be used
+multiple times, for multiple scenarios). The CSV files are the output
+of the --run-changes option of the `kcs.change_perc` module.
+
+$ python -m kcs.change_perc.plot pr_change_2050_jja_nlpoint.csv pr_change_2050_jja_nlpoint.png \
+    --epoch 2050 --text 'precip, DJF', --ytitle 'Change (%)' --ylimits -60 45 \
+    --scenario-run G pr_change_G2050_jja_nlpoint_ecearth.csv \
+    --scenario-run W pr_change_W2050_jja_nlpoint_ecearth.csv
 
 """
 
@@ -164,7 +174,7 @@ def parse_args():
     parser.add_argument('csvfile', help="Input CSV file with percentile change distribution.")
     parser.add_argument('output', help="Output figure file. The extension automatically "
                         "specifies the file type.")
-    parser.add_argument('--scenario-runs', nargs=2, action='append',
+    parser.add_argument('--scenario-run', nargs=2, action='append',
                         help="Optional individual runs for scenarios, to overplot. "
                         "Can be used multiple times, once for each scenario. Takes "
                         "two argument: a scenario name (e.g., 'G', or 'W_L') and a "
@@ -205,7 +215,7 @@ def main():
                   epoch=args.epoch)
 
     scenarios = OrderedDict()
-    for name, csvfile in args.scenario_runs:
+    for name, csvfile in args.scenario_run:
         scenarios[name] = pd.read_csv(csvfile, index_col=False)
 
     run(data, labels, limits=args.ylimits,

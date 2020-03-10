@@ -2,8 +2,8 @@
 
 Example usage:
 
-$ python -m kcs.change_perc @cmip5-pr-nlpoint-averaged.list --season djf \
-    --cmip-period 2036  2065 --relative --csvfile pr_change_2050_djf_nlpoint.csv -v
+$ python -m kcs.change_perc @cmip-pr-nlpoint-averaged.list --season djf \
+      --period 2035 2064 --relative --csvfile pr_change_2050_djf_nlpoint.csv -v
 
 For runs that are already concatenated:
 
