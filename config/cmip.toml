@@ -1,0 +1,48 @@
+[cmip]
+# Configuration for everything that considers CMIP data
+
+
+# Actual timespan a given scenario epoch corresponds to
+periods = {2050 = [2036, 2065], 2085 = [2071, 2100]}
+
+# Control period defines the reference period to which to compare (and
+# possibly normalize) to.
+# CMIP5 would be [1981, 2010], CMIP6 would be [1991, 2020]
+control_period = [1981, 2010]
+
+[cmip.data]
+# List the data files for the different data types.
+# This should e.g. filter out bad data files and unwanted experiments.
+# Can be globbing patterns or @-lists.
+tas_global = "@cmip_tas_global.list"
+tas_nlpoint = "@cmip_tas_nlpoint.list"
+pr_nlpoint = "@cmip_pr_nlpoint.list"
+
+# Normalize the CMIP data to the control period.
+# Choices are "model", "experiment" or "run". These options vary from
+# the most to the least spread of normalized data around the control period.
+# Leave blank to not normalize (usually a bad idea).
+norm_by = "run"
+
+# Calculate the tas change for a specific seasonal average, or a yearly average
+# Choices are "year", "djf", "mam", "jja", "son".
+season = "year"
+
+
+[cmip.data.matching]
+# Configuration how to match and concatenate CMIP historical and future experiments
+
+# Match future and historical runs by model (very generic) or ensemble (very specific).
+match_by = "ensemble"
+
+# Where to get the match info from. Either (NetCDF) 'attributes' or the 'filename' pattern
+# Should always be a list: the later options in the list serve as a fallback in case earlier
+# options don't succeed
+match_info_from = ["attributes", "filename"]
+
+# What to do when a future ensemble can't be matched:
+# - "error": raise an error, and stop the program
+# - "remove": remove (ignore) the future ensemble
+# - "randomrun": pick a random historical run that matches all attributes, except the realization
+# - "random": pick a random historical run from all ensembles of that model
+on_no_match = "randomrun"

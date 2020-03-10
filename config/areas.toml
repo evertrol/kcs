@@ -1,0 +1,12 @@
+[areas]
+# Define areas of interest
+# Use w, e, s, n identifiers in a inline-table/map/dict for a rectangular area
+# Or lat, lon in a inline-table/map/dict for a single point
+# Or the special value "global"
+# Values for w/e/s/n/lat/lon should all be floating point.
+# Shapefiles and masks are not yet supported.
+global = "global"
+nlpoint = {lat = 51.25, lon = 6.25}
+nlbox = {w = 4.5, e = 8.0, s = 50.5, n = 53.0}
+weurbox = {w = 4.0, e = 14.0, s= 47.0, n = 53.0}
+rhinebasin = {w = 6, e = 9, n = 52, s = 47}

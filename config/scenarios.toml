@@ -1,0 +1,52 @@
+
+[scenario]
+
+[scenario.defs]
+# General definitions for a name or precip do not have to be commented out below, even if the corresponding
+# scenarios further below are commented-out.
+
+# percentile of CMIP tas for a given epoch that the 'W' and 'G' scenarios correspond to
+W = 90.0
+G = 10.0
+# percent change in precipitation (times global tas increase) for 'L' and 'H' scenarios
+L = 4.0
+H = 8.0
+
+
+# Scenarios to use.
+# This defines only the names and epoch.
+# Values (what G/W and L/H correspond to) are filled in below.
+# Comment-out scenarios that are not to be used/calculated.
+# Note the use of double square brackets here, since it is a list.
+[[scenario.list]]
+name = "G"
+epoch = 2050
+precip = "L"
+[[scenario.list]]
+name = "W"
+epoch = 2050
+precip = "L"
+[[scenario.list]]
+name = "G"
+epoch = 2050
+precip = "H"
+[[scenario.list]]
+name = "W"
+epoch = 2050
+precip = "H"
+[[scenario.list]]
+name = "G"
+epoch = 2085
+precip = "L"
+[[scenario.list]]
+name = "W"
+epoch = 2085
+precip = "L"
+[[scenario.list]]
+name = "G"
+epoch = 2085
+precip = "H"
+[[scenario.list]]
+name = "W"
+epoch = 2085
+precip = "H"

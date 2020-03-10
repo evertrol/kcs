@@ -1,0 +1,8 @@
+[extra_data]
+# Configuration for additional data
+# This is the data of interest, for which a steering table will be
+# calculated, and whose runs will be resampled.
+# This assumes the datasets are already concatenated datasets: historical + future.
+
+data = "@ecearth-tas_global.list"
+control_period = [1981, 2010]

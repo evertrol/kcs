@@ -1,0 +1,7 @@
+[variables]
+# Some generic configuration regarding variables
+
+# For which variables to calculate a relative change,
+# instead of an absolute change (compare 'pr' versus 'tas')
+# A list of short variable names.
+relative = ["pr"]

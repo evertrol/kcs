@@ -1,0 +1,74 @@
+[data]
+# Some generic configuration for the input data
+# This assumes NetCDF files with proper (CF-conventions) attributes
+
+# Define the attribute names for meta information.
+# Each definition should be a list: this allows to handle different
+# conventions (e.g., between CMIP5 and CMIP6) if one is not available.
+experiment = ["experiment_id"]
+model = ["model_id", "source_id"]
+realization = ["realization"]
+initialization = ["initialization_method"]
+physics = ["physics_version"]
+prip = ["parent_experiment_rip", "parent_variant_label"]
+var =  ["variable_id"]
+
+# What is the attribute value that indicates historical experiments?
+# Everything else is assumed to be a future experiment.
+# This value is case-insensitive.
+historical_experiment = "historical"
+
+[data.filenames]
+# Definitions of filename patterns, to obtain attribute information from.
+# Several are given, for various conventions.
+# All are tried, until a match is found.
+
+# Regexes can be notably hard to read, especially in this case, since every
+# blackslash needs to be escaped, resulting in lots of double backslashes.
+
+[data.filenames.esmvaltool]
+pattern = """^CMIP\\d_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\\d+)\
+i(?P<initialization>\\d+)\
+p(?P<physics>\\d+)_\
+(?P<var>[a-z]+)_\
+.*\\.nc$\
+"""
+
+[data.filenames.cmip5]
+pattern = """^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\\d+)\
+i(?P<initialization>\\d+)\
+p(?P<physics>\\d+)_\
+.*\\.nc$\
+"""
+
+[data.filenames.cmip6]
+pattern = """^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+r(?P<realization>\\d+)\
+i(?P<initialization>\\d+)\
+p(?P<physics>\\d+)\
+f\\d+_\
+gn_\
+.*\\.nc$\
+"""
+
+[data.filenames.ecearth]
+pattern = """^\
+(?P<var>[a-z]+)_\
+(?P<mip>[A-Za-z]+)_\
+(?P<model>[-A-Za-z0-9]+)_\
+(?P<experiment>[A-Za-z0-9]+)_\
+.*\\.nc$\
+"""

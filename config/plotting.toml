@@ -1,0 +1,37 @@
+[plotting]
+figsize = [8.0, 8.0]
+
+[plotting.tas_increase]
+# Configuration for global temperature increase plot
+
+# CMIP percentiles levels to plot
+# Each level needs a name, to be re-used in the styline configuration
+levels = {extreme = [5.0, 95.0], middle = [10.0, 90.0], narrow = [25.0, 75.0]}
+
+# Smooth the plot across time; value should be an integer. Leave blank for no smoothing.
+rolling_window = 10
+
+[plotting.tas_increase.extra_data]
+# Overplot extra datasets?
+overplot = true
+# Plot averaged data, or individual runs
+average_data = true
+# Smooth with rolling window; same as for CMIP data
+rolling_window = 10
+
+
+[plotting.tas_increase.labels]
+x = "Year"
+y = "Increase [${}^{\\circ}$]"
+
+[plotting.tas_increase.range]
+# Use a 2-element list. Leave blank to let Matplotlib figure things out.
+x = [1950, 2100]  # years, in integers
+y = [-1.0, 6.0]   # always float
+
+[plotting.tas_increase.styles]
+# Re-use the level names above.
+# Use Matplotlib color and alpha codes.
+# Anything not given is 'black' (color) and 1.0 (alpha; opaque).
+colors = {extreme = "#bbbbbb", middle = "#888888", narrow = "#555555", extra_data = "#669955"}
+alpha = {extreme = 0.8, middle = 0.4, narrow = 0.2}

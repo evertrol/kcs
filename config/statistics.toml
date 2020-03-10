@@ -1,0 +1,17 @@
+[statistics]
+# Which statistics (mean and percentiles) to calculate.
+# There are two subsets:
+# 1. the statistics for the tas change (which leads to the steering table)
+# 2. the statistics for the seasonal-regional change plots
+
+[statistics.tas_change]
+# A list of floating point numbers (matching between these floating
+# point numbers for finding the right percentiles, is done with an
+# accuracy of 0.0001 tolerance).
+percentiles = [5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0]
+# Calculate the mean as well
+mean = true
+
+[statistics.regional_changes]
+percentiles = [5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0]
+mean = true
