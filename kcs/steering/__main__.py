@@ -13,7 +13,7 @@ of input data, if e.g. the requested range is large.)
 
 Example usage:
 
-$ python -m kcs.steering  distribution-percentiles.csv  data/ecearth/tas-global-averaged/tas_Amon_ECEARTH23_rcp85_186001-210012_*.nc --scenario G2050 2050 10 --scenario W2050 2050 90 --scenario G2085 2085 10 --scenario W2085 2085 90  --rolling-mean 10 --outfile steering.csv
+$ python -m kcs.steering  distribution-percentiles.csv  data/ecearth/tas-global-averaged/tas_Amon_ECEARTH23_rcp85_186001-210012_*.nc --scenario G 2050 10 --scenario W 2050 90 --scenario G 2085 10 --scenario W 2085 90  --rolling-mean 10 --outfile steering.csv
 
 """
 
