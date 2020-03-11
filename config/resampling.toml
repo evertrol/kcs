@@ -16,4 +16,4 @@ step2table = "step2.toml"
 # Only give the number of occurrences that have a penalty less than
 # infinity, including a 0.0 penalty (for e.g. a single, `1`, occurrence).
 # All penalties should be floating point numbers.
-##% penalties = {"1": 0.0, "2": 0.0, "3": 1.0, "4": 5.0}
+penalties = {1 = 0.0, 2 = 0.0, 3 = 1.0, 4 = 5.0}
