@@ -6,14 +6,6 @@ from pprint import pprint
 import toml
 
 
-try:
-    fname = sys.argv[1]
-except IndexError:
-    fname = 'config/config-split.toml'
-dirname = os.path.dirname(fname)
-with open(fname) as fh:
-    config = toml.load(fh)
-
 
 def nested_update(current, new):
     """Nested update of dicts
@@ -34,27 +26,43 @@ def nested_update(current, new):
             current[key] = value
 
 
-for name, section  in config.items():
-    if 'include' in section:
-        fname = section['include']
-        if fname.startswith('./'):  # relative with respect to the main config file
-            fname = os.path.normpath(os.path.join(dirname, fname))
-        with open(fname) as fh:
-            section_config = toml.load(fh)
-        if name not in section_config:
-            raise KeyError(f"{fname} is missing the [{name}] heading")
-        nested_update(section_config[name], section)
-        config[name] = section_config[name]
-        del config[name]['include']
+def read_config(filename):
+    with open(filename) as fh:
+        config = toml.load(fh)
+
+    for name, section  in config.items():
+        if 'include' in section:
+            fname = section['include']
+            if fname.startswith('./'):  # relative with respect to the main config file
+                fname = os.path.normpath(os.path.join(dirname, fname))
+            with open(fname) as fh:
+                section_config = toml.load(fh)
+            if name not in section_config:
+                raise KeyError(f"{fname} is missing the [{name}] heading")
+            nested_update(section_config[name], section)
+            config[name] = section_config[name]
+            del config[name]['include']
+
+    return config
 
 
-pprint(config)
+try:
+    fname = sys.argv[1]
+except IndexError:
+    fname = 'config-split.toml'
+dirname = os.path.dirname(fname)
+config = read_config(fname)
 
-# try:
-#     fname = sys.argv[2]
-# except IndexError:
-#     fname = 'config/config.toml'
-# with open(fname) as fh:
-#     config2 = toml.load(fh)
-# for key in config:
-#     assert key, config[key] == config2[key]
+
+
+try:
+    fname = sys.argv[2]
+except IndexError:
+    fname = 'config.toml'
+config2 = read_config(fname)
+#pprint(config['scenario'])
+#pprint(config2['scenario'])
+for key in config:
+    assert config[key] == config2[key], key
+
+#print(toml.dumps(config))
