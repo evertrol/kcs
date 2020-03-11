@@ -11,6 +11,7 @@ Welcome to kcs's documentation!
    :caption: Contents:
 
    usage.rst
+   extras.rst
 
 
 Indices and tables
