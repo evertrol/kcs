@@ -16,9 +16,13 @@ $ python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list --season jja 
 $ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season djf  --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
 $ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season jja  --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
 
-Provided the list files exists, of course (the `--relative pr` is left even for the tas runs, just to keep things simple).
+Provided the list files exists, of course (the `--relative pr` is left
+even for the tas runs, just to keep things simple).
 
-One could even cut the steering.csv file in two parts, a steering2050.csv and a steering2085.csv file, each have just two lines with the respective epochs. A simple nested bash loop would then let things run on eight cores:
+One could even cut the steering.csv file in two parts, a
+steering2050.csv and a steering2085.csv file, each have just two lines
+with the respective epochs. A simple nested bash loop would then let
+things run on eight cores:
 
 for epoch in 2050 2085
 do
@@ -82,7 +86,7 @@ YTITLE = {
     'tas': r"Change (${}^{\circ}$C)",
 }
 
-logger = logging.getLogger('kcs.change_perc.runall')
+logger = logging.getLogger('kcs.change_perc.runall')  # pylint: disable=invalid-name
 
 
 def read_data(paths, attributes_from=('attributes', 'filename'),

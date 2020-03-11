@@ -37,8 +37,9 @@ ALPHAS = {(5, 95): 0.8, (10, 90): 0.4, (25, 75): 0.4}
 PERC_RANGES = [(10, 90), (25, 75)]
 
 
-logname = 'kcs.change_perc.plotting' if __name__ == '__main__' else __name__
-logger = logging.getLogger(logname)
+# pylint: disable=invalid-name
+logname = 'kcs.change_perc.plot' if __name__ == '__main__' else __name__
+logger = logging.getLogger(logname)   # pylint: disable=invalid-name
 
 
 def plot_cmip(data, colors=None, alphas=None, perc_ranges=None,
