@@ -8,13 +8,9 @@ import itertools
 import functools
 from datetime import datetime
 import multiprocessing
-import json
-import argparse
 import logging
-from pprint import pformat
 import numpy as np
 import pandas as pd
-import h5py
 import iris
 
 
@@ -317,25 +313,6 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     return s3_indices
 
 
-def save_indices_h5(filename, indices):
-    """Save the (resampled) array of indices in a HDF5 file"""
-    h5file = h5py.File(filename, 'a')
-    for key, value in indices.items():
-        name = "/".join(key)
-        try:
-            group = h5file[name]
-        except KeyError:
-            group = h5file.create_group(name)
-        for k, v in value['meta'].items():  # pylint: disable=invalid-name
-            group.attrs[k] = json.dumps(v) if isinstance(v, (dict, list)) else v
-        if 'control' in group:
-            del group['control']
-        group.create_dataset('control', data=value['data']['control'])
-        if 'future' in group:
-            del group['future']
-        group.create_dataset('future', data=value['data']['future'])
-
-
 def resample(indices, data, variables, seasons, relative):
     """Perform the actual resampling of data, given the resampled indices"""
 
@@ -370,51 +347,6 @@ def resample(indices, data, variables, seasons, relative):
     return diffs
 
 
-def save_resamples(filename, diffs, as_csv=True):
-    """Save the resampled data, that is, the changes (differences) between
-    epochs, to a HDF5 file
-
-    With `as_csv` set to `True`, save each individual
-    scenario-variable-season combination as a separate CSV file, named
-    after the combination (and `resampled_` prepended). These CSV
-    files can be used with kcs.change_perc.plot, with the --scenario
-    option.
-
-    Files are always overwritten if they exist.
-
-    """
-
-    h5file = h5py.File(filename, 'w')
-    for key, value in diffs.items():
-        keyname = "/".join(key)
-        for var, value2 in value.items():
-            for season, diff in value2.items():
-                name = f"{keyname}/{var}/{season}"
-                if name not in h5file:
-                    h5file.create_group(name)
-                group = h5file[name]
-
-                # Remove existing datasets, to avoid problems
-                # (we probably could overwrite them; this'll work just as easily)
-                for k in {'diff', 'mean', 'std', 'keys'}:
-                    if k in group:
-                        del group[k]
-
-                group.create_dataset('diff', data=diff.values)
-                group.create_dataset('mean', data=diff.mean(axis=0))
-                group.create_dataset('std', data=diff.std(axis=0))
-                # pylint: disable=no-member
-                dataset = group.create_dataset('keys', (len(STATS),), dtype=h5py.string_dtype())
-                dataset[:] = STATS
-
-                assert len(STATS) == len(diff.mean(axis=0))
-
-                if as_csv:
-                    csvfile = "_".join(key)
-                    csvfile = f"resampled_{csvfile}_{var}_{season}.csv"
-                    diff.to_csv(csvfile, index=False)
-
-
 def run(dataset, steering_table, ranges, penalties,
         nstep1=NSTEP1, nstep3=NSTEP3, nsample=NSAMPLE,
         nsections=NSECTIONS, control_period=CONTROL_PERIOD,
@@ -423,8 +355,6 @@ def run(dataset, steering_table, ranges, penalties,
 
     if relative is None:
         relative = RELATIVE
-
-    columns = np.arange(nsections)
 
     data = {}
     indices = {}
@@ -452,8 +382,8 @@ def run(dataset, steering_table, ranges, penalties,
         rrange = ranges[scenario][subscenario][epoch]
         logger.info("Processing %s_%s - %s %s, %.2f pr", scenario, subscenario, epoch,
                     period, precip_change)
-        final_indices = find_resamples(data[mainkey], indices[mainkey], means[mainkey],
-                                       precip_change, rrange, columns, penalties,
+        final_indices = find_resamples(indices[mainkey], means[mainkey],
+                                       precip_change, rrange, penalties,
                                        nstep1, nstep3, nsample, nproc)
 
         attrs = {
@@ -465,5 +395,4 @@ def run(dataset, steering_table, ranges, penalties,
     diffs = resample(all_indices, data, variables, seasons=['djf', 'mam', 'jja', 'son'],
                      relative=relative)
 
-    save_indices_h5("indices.h5", all_indices)
-    save_resamples("resamples.h5", diffs)
+    return all_indices, diffs

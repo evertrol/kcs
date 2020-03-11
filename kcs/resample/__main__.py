@@ -23,9 +23,11 @@ import argparse
 import logging
 import pathlib
 import itertools
+import json
 import toml
 import numpy as np
 import pandas as pd
+import h5py
 import iris
 import kcs.utils.argparse
 import kcs.utils.logging
@@ -41,6 +43,7 @@ N2 = 50
 NSTEP3 = 8
 NSAMPLE = 10_000
 NSECTIONS = 6
+STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 
 
 logger = logging.getLogger('kcs.resample')   # pylint: disable=invalid-name
@@ -105,6 +108,71 @@ def read_steering_target(filename, scenarios, scenario_selection=None):
     return table
 
 
+def save_indices_h5(filename, indices):
+    """Save the (resampled) array of indices in a HDF5 file"""
+    h5file = h5py.File(filename, 'a')
+    for key, value in indices.items():
+        name = "/".join(key)
+        try:
+            group = h5file[name]
+        except KeyError:
+            group = h5file.create_group(name)
+        for k, v in value['meta'].items():  # pylint: disable=invalid-name
+            # Transforms a dict to str so it can be saved in HDF 5
+            group.attrs[k] = json.dumps(v) if isinstance(v, (dict, list)) else v
+        if 'control' in group:
+            del group['control']
+        group.create_dataset('control', data=value['data']['control'])
+        if 'future' in group:
+            del group['future']
+        group.create_dataset('future', data=value['data']['future'])
+
+
+def save_resamples(filename, diffs, as_csv=True):
+    """Save the resampled data, that is, the changes (differences) between
+    epochs, to a HDF5 file
+
+    With `as_csv` set to `True`, save each individual
+    scenario-variable-season combination as a separate CSV file, named
+    after the combination (and `resampled_` prepended). These CSV
+    files can be used with kcs.change_perc.plot, with the --scenario
+    option.
+
+    Files are always overwritten if they exist.
+
+    """
+
+    h5file = h5py.File(filename, 'w')
+    for key, value in diffs.items():
+        keyname = "/".join(key)
+        for var, value2 in value.items():
+            for season, diff in value2.items():
+                name = f"{keyname}/{var}/{season}"
+                if name not in h5file:
+                    h5file.create_group(name)
+                group = h5file[name]
+
+                # Remove existing datasets, to avoid problems
+                # (we probably could overwrite them; this'll work just as easily)
+                for k in {'diff', 'mean', 'std', 'keys'}:
+                    if k in group:
+                        del group[k]
+
+                group.create_dataset('diff', data=diff.values)
+                group.create_dataset('mean', data=diff.mean(axis=0))
+                group.create_dataset('std', data=diff.std(axis=0))
+                # pylint: disable=no-member
+                dataset = group.create_dataset('keys', (len(STATS),), dtype=h5py.string_dtype())
+                dataset[:] = STATS
+
+                assert len(STATS) == len(diff.mean(axis=0))
+
+                if as_csv:
+                    csvfile = "_".join(key)
+                    csvfile = f"resampled_{csvfile}_{var}_{season}.csv"
+                    diff.to_csv(csvfile, index=False)
+
+
 def str2bool(string):
     """Convert a command line string value to a Python boolean"""
     if isinstance(string, bool):
@@ -147,13 +215,19 @@ def parse_args():
                         "integer division, and any remains are discarded. Thus, a period of "
                         "30 years (inclusive) and `--nsections=6` (the default) results in six "
                         "five-year periods")
-    parser.add_argument('--penalties', help="TOML file with penalties for multiple occurences. "
+    parser.add_argument('--penalties', required=True,
+                        help="TOML file with penalties for multiple occurences. "
                         "See example file for its format.")
     parser.add_argument('--relative', nargs='+', default=['pr'], help="List of short variable "
                         "names for which the relative (percentual) change is to be calculated.")
 
+    parser.add_argument('--indices-out', default="indices.h5", help="HDF 5 output file "
+                        "for the indices.")
+    parser.add_argument('--resamples-out', default="resamples.h5", help="HDF 5 output file "
+                        "for the resampled data.")
+
     parser.add_argument('-N', '--nproc', type=int, default=NPROC,
-                        help="Number of simultaneous processes")
+                        help="Number of simultaneous processes.")
 
     args = parser.parse_args()
 
@@ -190,9 +264,12 @@ def main():
     with open(args.ranges) as fh:  # pylint: disable=invalid-name
         ranges = toml.load(fh)
 
-    run(dataset, steering_table, ranges, args.penalties,
-        args.nstep1, args.nstep3, args.nsample, args.nsections, args.control_period,
-        relative=args.relative, nproc=args.nproc)
+    indices, diffs = run(dataset, steering_table, ranges, args.penalties,
+                         args.nstep1, args.nstep3, args.nsample, args.nsections,
+                         args.control_period, relative=args.relative, nproc=args.nproc)
+
+    save_indices_h5(args.indices_out, indices)
+    save_resamples(args.resamples_out, diffs)
 
 
 if __name__ == '__main__':
