@@ -174,15 +174,7 @@ periods = {2050 = [2036, 2065], 2085 = [2071, 2100]}
 # Control period defines the reference period to which to compare (and
 # possibly normalize) to.
 # CMIP5 would be [1981, 2010], CMIP6 would be [1991, 2020]
-control_period = [1981, 2010]
-
-[cmip.data]
-# List the data files for the different data types.
-# This should e.g. filter out bad data files and unwanted experiments.
-# Can be globbing patterns or @-lists.
-tas_global = "@cmip_tas_global.list"
-tas_nlpoint = "@cmip_tas_nlpoint.list"
-pr_nlpoint = "@cmip_pr_nlpoint.list"
+control_period = [1991, 2020]
 
 # Normalize the CMIP data to the control period.
 # Choices are "model", "experiment" or "run". These options vary from
