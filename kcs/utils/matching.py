@@ -27,7 +27,7 @@ match_by: 'ensemble'
 import logging
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def match(dataset, match_by='ensemble', on_no_match='error', historical_key='historical'):

@@ -17,7 +17,8 @@ class RangeConstraint:
         constraint = iris.Constraint(year=RangeConstraint(1950, 2050))
         century_cube = constraint.extract(cube)
 
-        constraint = iris.Constraint(time=RangeConstraint(cftime.datetime(2010, 1, 1), cftime.datetime(2010, 6, 30))
+        constraint = iris.Constraint(time=RangeConstraint(cftime.datetime(2010, 1, 1),
+                                                          cftime.datetime(2010, 6, 30))
         halfyear_cube = constraint.extract(cube)
 
     """

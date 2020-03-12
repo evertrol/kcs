@@ -18,11 +18,12 @@ import iris.coord_categorisation
 from .constraints import CoordConstraint
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def fixcoords(cube, realization):
-    """Add a number of auxiliary coordinates, and adds bounds for longitude and latitude.
+    """Add a number of auxiliary coordinates, and adds bounds for
+    longitude and latitude.
 
     The input cube is changed in-place, as well as returned
 
@@ -64,6 +65,8 @@ def fixcoords(cube, realization):
 
 
 def create_grid():
+    """DUMMY DOCSTRING"""
+    # TO DO: specify grid size and offset in configuration
     logger.info("Creating grid")
     longitude = np.linspace(0.5, 359.5, 360)
     latitude = np.linspace(-89.5, 89.5, 180)
@@ -78,7 +81,7 @@ def create_grid():
 
 
 def extract_areas(cube, areas=None, targetgrid=None, average_area=True, gridscheme='area'):
-
+    """DUMMY DOCSTRING"""
     if areas is None:
         areas = {'global': None}
 

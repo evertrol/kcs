@@ -17,6 +17,7 @@ import logging
 import pathlib
 from itertools import chain
 import iris
+from kcs.config import default_config, read_config
 import kcs.utils.date
 import kcs.utils.logging
 import kcs.utils.argparse
@@ -26,8 +27,6 @@ from kcs.utils.atlist import atlist
 from . import run
 
 
-HISTORICAL_KEY = 'historical'
-REFERENCE_PERIOD = (1981, 2010)
 MINDATA = {'historical': 20, 'future': 4}
 PERC_PERIOD = (1950, 2100)
 
@@ -57,9 +56,8 @@ def parse_args():
                         help="Output CSV file with the distribution "
                         "percentiles-versus-year table. "
                         "The default is 'distribution-percentiles.csv'")
-    parser.add_argument('--historical-key', default=HISTORICAL_KEY,
-                        help="Identifier for the historical experiment "
-                        f"(default '{HISTORICAL_KEY}').")
+    parser.add_argument('--historical-key',
+                        help="Identifier for the historical experiment.")
     parser.add_argument('--period', nargs=2, type=int, default=PERC_PERIOD,
                         help="Period (years, inclusive) for which to calculate "
                         "the percentile distribution. Default is 1950-2100.")
@@ -72,10 +70,9 @@ def parse_args():
     parser.add_argument('--no-year-average', action='store_true',
                         help="Do not use yearly/seasonal averages")
     parser.add_argument('--reference-period', nargs=2, type=int,
-                        default=list(REFERENCE_PERIOD),
                         help="Reference period (to normalize EC-EARTH data): start and end year. "
                         "Years are inclusive (i.e., Jan 1 of 'start' up to and "
-                        f"including Dec 31 of 'end'). Default {REFERENCE_PERIOD}.")
+                        f"including Dec 31 of 'end').")
     parser.add_argument('--norm-by', choices=['model', 'experiment', 'run'],
                         default='run',
                         help="Normalize data (to --reference-period) per 'model', "
@@ -85,7 +82,6 @@ def parse_args():
                         help="Match future and historical runs by model (very generic) "
                         "or ensemble (very specific). Default is 'ensemble'.")
     parser.add_argument('--match-info-from', choices=['attributes', 'filename'], nargs='+',
-                        default=['attributes', 'filename'],
                         help="Where to get the information from to match runs. 'attributes' "
                         "will use the NetCDF attributes, 'filename' will attempt to deduce "
                         "them from the filename. Both can be given, in order of importance, "
@@ -94,7 +90,7 @@ def parse_args():
                         "Important attributes are 'parent-experiment-rip', 'realization', "
                         "'physics_version', 'initialization_method', 'experiment', 'model_id'")
     parser.add_argument('--on-no-match', choices=['error', 'remove', 'randomrun', 'random'],
-                        default='error', help="What to do with a (future) experiment run that "
+                        help="What to do with a (future) experiment run that "
                         "has no matching run. 'error' raise an exception, 'remove' removes "
                         "(ignores) the run. 'randomrun' picks a random history run with the "
                         "same 'physics' and 'initialization' values (but a different "
@@ -103,8 +99,20 @@ def parse_args():
     parser.add_argument('--average-experiments', action='store_true', help="Average ensemble "
                         "runs over their model-experiment, before calculating percentiles.")
     args = parser.parse_args()
+    read_config(args.config)
+
     args.paths = [pathlib.Path(filename) for filename in args.files]
     args.average_years = not args.no_year_average
+    if not args.historical_key:
+        args.historical_key = default_config['data']['attributes']['historical_experiment']
+    if not args.match_by:
+        args.match_info_from = default_config['data']['cmip']['matching']['by']
+    if not args.match_info_from:
+        args.match_info_from = default_config['data']['cmip']['matching']['info_from']
+    if not args.on_no_match:
+        args.on_no_match = default_config['data']['cmip']['matching']['on_fail']
+    if not args.reference_period:
+        args.reference_period = default_config['data']['cmip']['control_period']
     return args
 
 
@@ -114,7 +122,6 @@ def main():
     kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
-
     paths = list(chain.from_iterable(atlist(path) for path in args.paths))
     dataset = read_data(paths)
     dataset = kcs.utils.matching.match(
@@ -122,8 +129,9 @@ def main():
         historical_key=args.historical_key)
 
     result, _ = run(dataset, historical_key=args.historical_key,
+                    reference_period=args.reference_period,
                     season=args.season, average_years=args.average_years,
-                    relative=args.relative, reference_period=args.reference_period,
+                    relative=args.relative,
                     period=args.period, normby=args.norm_by,
                     average_experiments=args.average_experiments)
     result.to_csv(args.outfile, index_label="date")

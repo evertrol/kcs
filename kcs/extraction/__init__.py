@@ -28,11 +28,8 @@ from kcs.utils.date import months_coord_to_days_coord
 import kcs.config
 
 
-# Allowed template substitution variable names: var, area, filename
-# (filename refers to the filename part of the input file, not the full path)
-TEMPLATE = "ecearth/{var}-{area}-averaged/{filename}"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def get_realization_from_path(path):
@@ -53,8 +50,10 @@ def get_varname(path):
 
 
 def process_single(path, areas, targetgrid=None, save_result=True,
-                   average_area=True, gridscheme='area', template=TEMPLATE,
+                   average_area=True, gridscheme='area', template=None,
                    mp=False, tempdir=None, ignore_common_warnings=False):
+    if template is None:
+        template = kcs.config.default_config['data']['extraction']['template']
     if isinstance(path, list):
         realizations = set(get_realization_from_path(p) for p in path)
         if len(realizations) > 1:
@@ -144,8 +143,10 @@ def process_single(path, areas, targetgrid=None, save_result=True,
 
 
 def process(paths, areas, regrid=False, save_result=True, average_area=True,
-            gridscheme='area', nproc=1, template=TEMPLATE, tempdir=None,
+            gridscheme='area', nproc=1, template=None, tempdir=None,
             subdir_per_realization=False, ignore_common_warnings=False):
+    if template is None:
+        template = kcs.config.default_config['data']['extraction']['template']
     if subdir_per_realization:
         pathlist = defaultdict(list)
         for path in paths:
@@ -170,8 +171,10 @@ def process(paths, areas, regrid=False, save_result=True, average_area=True,
 
 
 def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1,
-        template=TEMPLATE, tempdir=None, subdir_per_realization=False,
+        template=None, tempdir=None, subdir_per_realization=False,
         ignore_common_warnings=False):
+    if template is None:
+        template = kcs.config.default_config['data']['extraction']['template']
     paths = [pathlib.Path(str(path)) if not isinstance(path, pathlib.Path) else path
              for path in paths]
     # No need to regrid the EC-EARTH data: all on the same grid

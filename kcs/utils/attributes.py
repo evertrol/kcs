@@ -21,17 +21,9 @@ info_from: [attributes, filename]
 import logging
 import re
 import pandas as pd
+from kcs.config import default_config
 
 
-ATTRIBUTES = {
-    'experiment': "experiment_id",
-    'model': ["model_id", "source_id"],
-    'realization': "realization",
-    'initialization': "initialization_method",
-    'physics': "physics_version",
-    'prip': ["parent_experiment_rip", "parent_variant_label"],
-    'var': ["variable_id"],
-}
 ATTRIBUTES_DEFAULT = {
     'experiment': "",
     'model': "",
@@ -40,65 +32,22 @@ ATTRIBUTES_DEFAULT = {
     'physics': 0,
     'prip': None,
 }
-# List of filename regex patterns
-# First is for ESMValTool
-# Second for CMIP5 local data
-# Third for CMIP6 data
-FILENAME_PATTERNS = ["""^CMIP\d_\
-(?P<model>[-A-Za-z0-9]+)_\
-(?P<mip>[A-Za-z]+)_\
-(?P<experiment>[A-Za-z0-9]+)_\
-r(?P<realization>\d+)\
-i(?P<initialization>\d+)\
-p(?P<physics>\d+)_\
-(?P<var>[a-z]+)_\
-.*\.nc$\
-""",
-# CMIP 5
-"""^\
-(?P<var>[a-z]+)_\
-(?P<mip>[A-Za-z]+)_\
-(?P<model>[-A-Za-z0-9]+)_\
-(?P<experiment>[A-Za-z0-9]+)_\
-r(?P<realization>\d+)\
-i(?P<initialization>\d+)\
-p(?P<physics>\d+)_\
-.*\.nc$\
-""",
-# CMIP 6
-"""^\
-(?P<var>[a-z]+)_\
-(?P<mip>[A-Za-z]+)_\
-(?P<model>[-A-Za-z0-9]+)_\
-(?P<experiment>[A-Za-z0-9]+)_\
-r(?P<realization>\d+)\
-i(?P<initialization>\d+)\
-p(?P<physics>\d+)\
-f\d+_\
-gn_\
-.*\.nc$\
-""",
-# Special (EC-EARTH concatenated runs)
-"""^\
-(?P<var>[a-z]+)_\
-(?P<mip>[A-Za-z]+)_\
-(?P<model>[-A-Za-z0-9]+)_\
-(?P<experiment>[A-Za-z0-9]+)_\
-.*\.nc$\
-""",
-]
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def _get_attributes_from_cube(attrs, attributes):
     """DUMMY"""
     data, found = {}, True
 
-    try:
-        data['experiment'] = attrs[attributes['experiment']]
-    except KeyError:
-        found = False
+    data['experiment'] = None
+    keys = attributes['experiment']
+    if isinstance(keys, str):
+        keys = [keys]
+    for key in keys:
+        if key in attrs:
+            data['experiment'] = attrs[key]
+            break
 
     data['model'] = None
     keys = attributes['model']
@@ -130,12 +79,14 @@ def _get_attributes_from_cube(attrs, attributes):
                 break
 
     for key in ['realization', 'physics', 'initialization']:
-        try:
-            data[key] = int(attrs[attributes[key]])
-        except KeyError:
-            found = False
-        except ValueError:
-            raise ValueError(f"{key} is not an integer: {attrs[attributes[key]]}")
+        data[key] = 0
+        keys = attributes[key]
+        if isinstance(keys, str):
+            keys = [keys]
+        for k in keys:
+            if k in attrs:
+                data[key] = int(attrs[k])
+                break
 
     return data, found
 
@@ -218,9 +169,10 @@ def get(cubes, paths, info_from=('attributes', 'filename'),
     """
 
     if attributes is None:
-        attributes = ATTRIBUTES
+        attributes = default_config['data']['attributes']
     if filename_pattern is None:
-        filename_pattern = FILENAME_PATTERNS
+        filename_pattern = [value['pattern'] for value in
+                            default_config['data']['filenames'].values()]
     elif isinstance(filename_pattern, str):
         filename_pattern = [filename_pattern]
     if isinstance(info_from, str):

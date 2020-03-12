@@ -76,8 +76,11 @@ def average_year(cubes, season=None, nproc=1):
 class ModelReferencePointCalculation:
     """DUMMY DOC-STRING"""
 
-    def __init__(self, dataset, historical_key=HISTORICAL_KEY, yearly=True, season=None,
-                 reference_period=REFERENCE_PERIOD, normby='run'):
+    def __init__(self, dataset, reference_period,
+                 historical_key=None, yearly=True, season=None,
+                 normby='run'):
+        if not historical_key:
+            historical_key = default_config['data']['historical_experiment']
         self.dataset = dataset
         self.historical_key = historical_key
         self.normby = normby
@@ -163,9 +166,8 @@ class ModelReferencePointCalculation:
         return averages
 
 
-def calc_reference_values(dataset, yearly=False, season=None,
-                          historical_key=HISTORICAL_KEY,
-                          reference_period=REFERENCE_PERIOD,
+def calc_reference_values(dataset, reference_period, yearly=False, season=None,
+                          historical_key=None,
                           normby='run'):
     """Calculate reference values
 
@@ -175,7 +177,10 @@ def calc_reference_values(dataset, yearly=False, season=None,
 
     """
 
+    if not historical_key:
+        historical_key = default_config['data']['historical_experiment']
     logger.info("Calculating reference values (period = %s)", reference_period)
+
     index = dataset['index_match_run']
     hindex = index[index > -1]
     cubes = dataset.loc[hindex, 'cube'].array
@@ -183,8 +188,8 @@ def calc_reference_values(dataset, yearly=False, season=None,
     future_data['match_historical_run'] = cubes
 
     calculation = ModelReferencePointCalculation(
-        future_data, yearly=yearly, season=season, historical_key=historical_key,
-        reference_period=reference_period, normby=normby)
+        future_data, reference_period, yearly=yearly, season=season,
+        historical_key=historical_key, normby=normby)
 
     models = dataset['model'].unique()
     reference_values = filter(None, map(calculation, models))
@@ -307,9 +312,8 @@ def calc_percentiles(dataset, period=PERC_PERIOD, average_experiments=False, npr
         percs, index=pd.DatetimeIndex([datetime(year, 1, 1) for year in years]))
 
 
-def run(dataset, historical_key, season=None, average_years=True,
-        relative=False, reference_period=REFERENCE_PERIOD,
-        period=PERC_PERIOD, normby='run', average_experiments=False):
+def run(dataset, historical_key, reference_period, season=None, average_years=True,
+        relative=False, period=PERC_PERIOD, normby='run', average_experiments=False):
     """Calculate the percentile yearly change distribution for the input data
 
     Also performs extracting of season (optional), averaging of years
@@ -327,6 +331,9 @@ def run(dataset, historical_key, season=None, average_years=True,
 
     """
 
+    if not historical_key:
+        historical_key = default_config['data']['historical_experiment']
+
     if season:
         dataset['cube'] = extract_season(dataset['cube'], season)
 
@@ -334,9 +341,9 @@ def run(dataset, historical_key, season=None, average_years=True,
         dataset['cube'] = average_year(dataset['cube'], season=season)
 
     reference_values = calc_reference_values(
-        dataset, yearly=average_years, season=season,
+        dataset, reference_period, yearly=average_years, season=season,
         historical_key=historical_key,
-        reference_period=reference_period, normby=normby)
+        normby=normby)
     dataset['reference_value'] = reference_values
     dataset = normalize(dataset, relative=relative, normby=normby)
 
