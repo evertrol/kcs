@@ -191,19 +191,19 @@ season = "year"
 # Configuration how to match and concatenate CMIP historical and future experiments
 
 # Match future and historical runs by model (very generic) or ensemble (very specific).
-match_by = "ensemble"
+by = "ensemble"
 
 # Where to get the match info from. Either (NetCDF) 'attributes' or the 'filename' pattern
 # Should always be a list: the later options in the list serve as a fallback in case earlier
 # options don't succeed
-match_info_from = ["attributes", "filename"]
+info_from = ["attributes", "filename"]
 
 # What to do when a future ensemble can't be matched:
 # - "error": raise an error, and stop the program
 # - "remove": remove (ignore) the future ensemble
 # - "randomrun": pick a random historical run that matches all attributes, except the realization
 # - "random": pick a random historical run from all ensembles of that model
-on_no_match = "randomrun"
+on_fail = "randomrun"
 
 [data.cmip.matching]
 # Empty: all values are taken from [data.matching]
@@ -218,7 +218,7 @@ control_period = [1981, 2010]
 
 [data.extra.matching]
 # An empty string means the datasets are already concatenated datasets: historical + future.
-match_by = ""
+by = ""
 
 # Any other key not defined here (match_info_from, on_no_match) are taken from [data.matching]
 
