@@ -27,36 +27,35 @@ H = 8.0
 # This defines only the names and epoch.
 # Values (what G/W and L/H correspond to) are filled in below.
 # Comment-out scenarios of no-interest.
-# Note the use of plural, 'scenarios', here
-[[scenario.list]]
+[scenario.G_L2050]
 name = "G"
 epoch = 2050
 precip = "L"
-[[scenario.list]]
+[scenario.W_L2050]
 name = "W"
 epoch = 2050
 precip = "L"
-[[scenario.list]]
+[scenario.G_H2050]
 name = "G"
 epoch = 2050
 precip = "H"
-[[scenario.list]]
+[scenario.W_H2050]
 name = "W"
 epoch = 2050
 precip = "H"
-[[scenario.list]]
+[scenario.G_L2085]
 name = "G"
 epoch = 2085
 precip = "L"
-[[scenario.list]]
+[scenario.W_L2085]
 name = "W"
 epoch = 2085
 precip = "L"
-[[scenario.list]]
+[scenario.G_H2085]
 name = "G"
 epoch = 2085
 precip = "H"
-[[scenario.list]]
+[scenario.W_H2085]
 name = "W"
 epoch = 2085
 precip = "H"
