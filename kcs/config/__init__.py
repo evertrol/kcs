@@ -2,11 +2,25 @@ import toml
 from .default import config_toml_string
 
 
+def adjust_config(config):
+    # Small adjustment: TOML has only string keys in dicts, but here,
+    # integer keys are needed
+    if 'resampling' in config:
+        penalties = {int(key): value for key, value in config['resampling']['penalties'].items()}
+        config['resampling']['penalties'] = penalties
+
+    # Fill in empty definitions if not available
+    if 'data' in config:
+        subsections = ['extra', 'cmip']
+        for sub in subsections:
+            for key, value in config['data']['matching'].items():
+                if key in subsections:
+                    continue
+                if key not in config['data'][sub]['matching']:
+                    config['data'][sub]['matching'][key] = value
+
 default_config = toml.loads(config_toml_string)
-# Small adjustment: TOML has only string keys in dicts, but here,
-# integer keys are needed
-penalties = {int(key): value for key, value in default_config['resampling']['penalties'].items()}
-default_config['resampling']['penalties'] = penalties
+adjust_config(default_config)
 
 
 def nested_update(current, new):
@@ -48,13 +62,12 @@ def read_config(filename):
             config[name] = section_config[name]
             del config[name]['include']
 
-    if 'resampling' in config:
-        penalties = {int(key): value for key, value in config['resampling']['penalties'].items()}
-        config['resampling']['penalties'] = penalties
+    adjust_config(config)
 
     # Replace the default configuration per section/table
     for name, section in config.items():
         default_config[name] = section
+
 
     return default_config
 
