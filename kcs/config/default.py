@@ -93,9 +93,9 @@ relative = ["pr"]
 # conventions (e.g., between CMIP5 and CMIP6) if one is not available.
 experiment = ["experiment_id"]
 model = ["model_id", "source_id"]
-realization = ["realization"]
-initialization = ["initialization_method"]
-physics = ["physics_version"]
+realization = ["realization", "realization_index"]
+initialization = ["initialization_method", "initialization_index"]
+physics = ["physics_version", "physics_index"]
 prip = ["parent_experiment_rip", "parent_variant_label"]
 var =  ["variable_id"]
 
