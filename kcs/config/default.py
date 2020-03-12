@@ -164,7 +164,7 @@ pattern = """^\
 """
 
 
-[cmip]
+[data.cmip]
 # Configuration for everything that considers CMIP data
 
 
@@ -195,7 +195,7 @@ norm_by = "run"
 season = "year"
 
 
-[cmip.data.matching]
+[data.matching]
 # Configuration how to match and concatenate CMIP historical and future experiments
 
 # Match future and historical runs by model (very generic) or ensemble (very specific).
@@ -213,15 +213,23 @@ match_info_from = ["attributes", "filename"]
 # - "random": pick a random historical run from all ensembles of that model
 on_no_match = "randomrun"
 
+[data.cmip.matching]
+# Empty: all values are taken from [data.matching]
 
-[extra_data]
+
+[data.extra]
 # Configuration for additional data
 # This is the data of interest, for which a steering table will be
 # calculated, and whose runs will be resampled.
-# This assumes the datasets are already concatenated datasets: historical + future.
 
-data = "@ecearth-tas_global.list"
 control_period = [1981, 2010]
+
+[data.extra.matching]
+# An empty string means the datasets are already concatenated datasets: historical + future.
+match_by = ""
+
+# Any other key not defined here (match_info_from, on_no_match) are taken from [data.matching]
+
 
 
 [statistics]
