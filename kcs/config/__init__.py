@@ -48,8 +48,9 @@ def read_config(filename):
             config[name] = section_config[name]
             del config[name]['include']
 
-    penalties = {int(key): value for key, value in config['resampling']['penalties'].items()}
-    config['resampling']['penalties'] = penalties
+    if 'resampling' in config:
+        penalties = {int(key): value for key, value in config['resampling']['penalties'].items()}
+        config['resampling']['penalties'] = penalties
 
     # Replace the default configuration per section/table
     for name, section in config.items():
