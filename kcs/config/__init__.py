@@ -29,6 +29,9 @@ def nested_update(current, new):
 
 
 def read_config(filename):
+    if not filename:
+        return default_config
+
     with open(filename) as fh:
         config = toml.load(fh)
 
