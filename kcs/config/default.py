@@ -87,6 +87,7 @@ relative = ["pr"]
 # Some generic configuration for the input data
 # This assumes NetCDF files with proper (CF-conventions) attributes
 
+[data.attributes]
 # Define the attribute names for meta information.
 # Each definition should be a list: this allows to handle different
 # conventions (e.g., between CMIP5 and CMIP6) if one is not available.
@@ -102,6 +103,10 @@ var =  ["variable_id"]
 # Everything else is assumed to be a future experiment.
 # This value is case-insensitive.
 historical_experiment = "historical"
+
+[data.extraction]
+template = "data/{var}-{area}-averaged/{filename}.nc"
+
 
 [data.filenames]
 # Definitions of filename patterns, to obtain attribute information from.
