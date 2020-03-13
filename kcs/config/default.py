@@ -214,7 +214,7 @@ on_fail = "randomrun"
 # This is the data of interest, for which a steering table will be
 # calculated, and whose runs will be resampled.
 
-control_period = [1981, 2010]
+control_period = [1991, 2020]
 
 [data.extra.matching]
 # An empty string means the datasets are already concatenated datasets: historical + future.
