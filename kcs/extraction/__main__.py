@@ -8,7 +8,7 @@ that follows Python formatted strings with variable names; the default
 is given in the `TEMPLATE` constant).
 
 The module can also be used as a executable module, with the `-m
-kcs.ecearth` option to the `python` executable.
+kcs.extraction` option to the `python` executable.
 
 """
 
@@ -16,12 +16,10 @@ import sys
 import argparse
 import itertools
 import logging
-import kcs.config
-import kcs.extraction
-import kcs.config
-import kcs.utils.logging
-import kcs.utils.argparse
-from kcs.utils.atlist import atlist
+from . import run
+from ..utils.logging import setup as log_setup
+from ..utils.argparse import parser as kcs_parser
+from ..utils.atlist import atlist
 
 
 logger = logging.getLogger('kcs.extraction')  # pylint: disable=invalid-name
@@ -38,7 +36,7 @@ def parse_args():
             print("\n".join(areas))
             parser.exit()
 
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
 
     parser.add_argument('files', nargs='+', help="Input files")
@@ -74,11 +72,11 @@ def parse_args():
 
 def main():
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
     files = list(itertools.chain.from_iterable(atlist(fname) for fname in args.files))
-    kcs.extraction.run(files, args.area, regrid=args.regrid,
+    run(files, args.area, regrid=args.regrid,
                        save_result=args.save_result, average_area=args.average_area,
                        nproc=args.nproc, template=args.template,
                        tempdir=args.tempdir,

@@ -26,11 +26,11 @@ try:
     from iris.util import equalise_attributes
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
-import kcs.utils.argparse
-import kcs.utils.logging
+from ..utils.argparse import parser as kcs_parser
+from ..utils.logging import setup as log_setup
 import kcs.utils.attributes
-import kcs.utils.matching
-from kcs.utils.atlist import atlist
+from ..utils.matching import match
+from ..utils.atlist import atlist
 from . import run
 
 
@@ -110,7 +110,7 @@ def concat_cubes(dataset, historical_key=HISTORICAL_KEY):
 
 def parse_args():
     """DUMMY DOCSTRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('files', nargs='+', help="Input data. This should be area-averaged data, "
                         "and already be filtered on relevant variable and area.")
@@ -169,14 +169,14 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
     paths = list(itertools.chain.from_iterable(atlist(path) for path in args.paths))
     dataset = read_data(paths, attributes_from=args.attributes_from)
     if not args.no_matching:
-        dataset = kcs.utils.matching.match(
+        dataset = match(
             dataset, match_by=args.match_by, on_no_match=args.on_no_match,
             historical_key=args.historical_key)
 

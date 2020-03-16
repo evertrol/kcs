@@ -4,7 +4,7 @@ import logging
 import numpy as np
 import pandas as pd
 import iris
-import kcs.utils.constraints
+from ..utils.constraints import EqualConstraint
 
 
 HISTORICAL_KEY = 'historical'
@@ -82,7 +82,7 @@ def calc_percentile_distribution(dataset):
 
 def extract_season(cubes, season):
     """DUMMY DOC-STRING"""
-    constraint = iris.Constraint(season=kcs.utils.constraints.EqualConstraint(season))
+    constraint = iris.Constraint(season=EqualConstraint(season))
     logger.info("Extracting season %s", season)
     for cube in cubes:
         if not cube.coords('season'):

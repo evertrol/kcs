@@ -22,8 +22,8 @@ import warnings
 import logging
 import iris
 from kcs.types import Data
-import kcs.utils.io
-import kcs.utils.coord
+from ..utils.io import load_cube
+from ..utils.coord import fixcoords, extract_areas
 from kcs.utils.date import months_coord_to_days_coord
 import kcs.config
 
@@ -63,7 +63,6 @@ def process_single(path, areas, targetgrid=None, save_result=True,
     else:
         realization = get_realization_from_path(path)
     logger.debug("Realization %d for %s", realization, path)
-
     varname = get_varname(path)
     with warnings.catch_warnings():
         if ignore_common_warnings:
@@ -73,7 +72,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
             warnings.filterwarnings("ignore", category=UserWarning,
                                     message="Using DEFAULT_SPHERICAL_EARTH_RADIUS")
         logger.info('Reading %s', path)
-        cube = kcs.utils.io.load_cube(path, variable_name=varname)
+        cube = load_cube(path, variable_name=varname)
 
     logger.info('Fixing coordinates')
     # EC-EARTH data has only 'months since', not 'days since'; iris doesn't accept that.
@@ -86,15 +85,15 @@ def process_single(path, areas, targetgrid=None, save_result=True,
             pass
         else:
             raise
-    cube = kcs.utils.coord.fixcoords(cube, realization)
+    cube = fixcoords(cube, realization)
 
     logger.info('Extracting areas')
     with warnings.catch_warnings():
         if ignore_common_warnings:
             warnings.filterwarnings("ignore", category=UserWarning,
                                     message="Using DEFAULT_SPHERICAL_EARTH_RADIUS")
-        cubes = kcs.utils.coord.extract_areas(cube, areas=areas, targetgrid=targetgrid,
-                                              average_area=average_area, gridscheme=gridscheme)
+        cubes = extract_areas(cube, areas=areas, targetgrid=targetgrid,
+                              average_area=average_area, gridscheme=gridscheme)
     assert len(cubes) == len(areas)
 
     data = []
