@@ -80,11 +80,43 @@ def create_grid():
     return targetgrid
 
 
+def parse_area(area):
+    if 'latitude' in area:
+        lat = area['latitude']
+    elif 'lat' in area:
+        lat = area['lat']
+    elif 's' in area and 'n' in area:
+        lat = [area['s'], area['n']]
+    else:
+        raise KeyError("missing latitude in area definition")
+    if 'longitude' in area:
+        lon = area['longitude']
+    elif 'lon' in area:
+        lon = area['lon']
+    elif 'long' in area:
+        lon = area['long']
+    elif 'e' in area and 'w' in area:
+        lon = [area['e'], area['w']]
+    else:
+        raise KeyError("missing latitude in area definition")
+
+    if isinstance(lon, (int, float)) and isinstance(lat, (int, float)):
+        return None, [('latitude', lat), ('longitude', lon)]
+
+    if len(lon) != 2:
+        raise ValueError("longitude area definition is the wrong format")
+    if len(lat) != 2:
+        raise ValueError("latitude area definition is the wrong format")
+    lon_constraint = CoordConstraint(area['longitude'][0], area['longitude'][1])
+    lat_constraint = CoordConstraint(area['latitude'][0], area['latitude'][1])
+    constraint = iris.Constraint(longitude=long_constraint, latitude=lat_constraint)
+    return constraint, None
+
+
 def extract_areas(cube, areas=None, targetgrid=None, average_area=True, gridscheme='area'):
     """DUMMY DOCSTRING"""
     if areas is None:
         areas = {'global': None}
-
     if targetgrid is not None:
         if gridscheme == 'area':
             scheme = iris.analysis.AreaWeighted()
@@ -109,18 +141,13 @@ def extract_areas(cube, areas=None, targetgrid=None, average_area=True, gridsche
             # - {'latitude': <north>, 'longitude': <east>}
             if isinstance(area, iris.Constraint):
                 excube = excube.extract(area)
-            elif isinstance(area, dict) and 'latitude' in area and 'longitude' in area:
-                if (isinstance(area['latitude'], (list, tuple)) and
-                        len(area['latitude']) == 2 and
-                        isinstance(area['longitude'], (list, tuple)) and
-                        len(area['longitude']) == 2):
-                    long_constraint = CoordConstraint(area['longitude'][0], area['longitude'][1])
-                    lat_constraint = CoordConstraint(area['latitude'][0], area['latitude'][1])
-                    constraint = iris.Constraint(longitude=long_constraint, latitude=lat_constraint)
-                    excube = excube.extract(constraint)
-                else:
-                    coords = [('latitude', area['latitude']), ('longitude', area['longitude'])]
+            elif isinstance(area, dict):
+                constraint, coords = parse_area(area)
+                if coords and not constraint:
                     excube = excube.interpolate(coords, iris.analysis.Linear())
+                else:
+                    excube = excube.extract(constraint)
+
         if excube is None:
             logger.warning("Area extraction failed for cube %r", cube)
             cubes[name] = None
