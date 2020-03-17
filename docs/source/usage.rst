@@ -445,7 +445,7 @@ be different realizations of the same model-experiment.
 
 .. code-block:: bash
 
-   $ python -m kcs.steering  tas_change.csv  @ecearth-tas-global-averaged.list \
+   $ python -m kcs.steering  tas_change_cmip.csv  @ecearth-tas-global-averaged.list \
        --scenario G 2050 10 --scenario W 2050 90 --scenario G 2085 10 --scenario W 2085 90 \
        --rolling-mean 10 --outfile steering.csv
 
@@ -456,7 +456,7 @@ data of the model of interest, EC-EARTH in our example.
 The ``--scenario`` options set the various scenarios of interest. The
 option can be repeated, and takes three values: a name, an epoch and a
 percentile. Be aware that the percentile to match should also be
-present in the ``tas_change.csv``.
+present in the ``tas_change_cmip.csv``.
 
 Here, we also calculated a rolling mean over the CMIP input data
 before the EC-EARTH data are matched, to smooth out any bumps in the
@@ -498,7 +498,7 @@ the epoch-percentile points), you can use the following command:
 
 .. code-block:: bash
 
-    python -m kcs.steering.plot tas_change.csv steering.csv \
+    python -m kcs.steering.plot tas_change_cmip.csv steering.csv \
 	    --outfile cmip-ecearth-scenarios.png \
         --extra-data @ecearth-tas-global.list --reference-epoch 2005 \
         --ylabel 'Temperature increase [${}^{\circ}$]'  --smooth 10 \
