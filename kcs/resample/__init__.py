@@ -308,7 +308,6 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     if not nproc:
         nsections = default_config['resampling']['nproc']
 
-    print(nstep1, nstep3, nsample, type(nstep1), type(nstep3), type(nsample))
     indices = calculate_s1(means, indices, precip_change, nproc=nproc)
     indices['control'] = indices['control'][:nstep1]
     indices['future'] = indices['future'][:nstep1]

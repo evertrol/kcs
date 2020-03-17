@@ -225,7 +225,22 @@ def parse_args():
     parser.add_argument('-N', '--nproc', type=int, help="Number of simultaneous processes.")
 
     args = parser.parse_args()
+
+    # Read and set defaults
     read_config(args.config)
+    if args.reference_period is None:
+        args.reference_period = default_config['data']['extra']['control_period']
+    if args.nproc is None:
+        args.nproc = default_config['resampling']['nproc']
+    if args.nstep1 is None:
+        args.nstep1 = default_config['resampling']['nstep1']
+    if args.nstep3 is None:
+        args.nstep3 = default_config['resampling']['nstep3']
+    if args.nsample is None:
+        args.nsample = default_config['resampling']['nsample']
+    if args.nsections is None:
+        args.nsections = default_config['resampling']['nsections']
+
     args.paths = [pathlib.Path(filename) for filename in args.files]
 
     args.pr_scenarios = {}
@@ -239,18 +254,6 @@ def parse_args():
     for i in range(max(penalties.keys())+1, args.nstep3+1):
         penalties[i] = math.inf
     args.penalties = penalties
-    if args.reference_period is None:
-        args.reference_period = default_config['data']['extra']['control_period']
-    if args.nproc is None:
-        args.nproc = default_config['resampling']['nproc']
-    if args.nstep1 is None:
-        args.nstep1 = default_config['resampling']['nstep1']
-    if args.nstep3 is None:
-        args.nstep3 = default_config['resampling']['nstep3']
-    if args.nsample is None:
-        args.nsample = default_config['resampling']['nsample']
-    if args.nsections is None:
-        args.nsections = default_config['resampling']['nsections']
 
     return args
 
