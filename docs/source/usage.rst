@@ -50,7 +50,8 @@ With Conda, create a new environment with the required packages::
 
 You can pick another name, and you may want to change to a newer
 Python version in the future, provided it's supported by the various
-packages.
+packages. (KCS supports Python 3.8, but not all dependencies do as of
+March 2020.)
 
 Once set up, activate the new environment, and install KCS manually
 from its repository::
@@ -72,13 +73,17 @@ package as runnable modules). The way to run such a module is as follows::
 
 Note the ``-m`` flag after ``python``, which indicates that the
 following argument is a module. This also keeps the Python executable
-together with the package.
+together with the package. This `-m` flag is an option to the
+``python`` executable, while any flags following ``kcs.<some_module>``
+belong to that runnable module (technically, it is therefore possible
+to have two different ``-m`` options on a single line).
 
 All runnable modules have a `-h` or `--help` option, to get a quick
 help; and a`-v` option for verbosity: used once, it will log warnings
 (fairly useful). ``-vv`` will produce some "info" log messages as
 well, and ``-vvv`` (the maximum level) will produce quite a number of
 debug messages along the way.
+
 
 
 @-lists
@@ -175,6 +180,14 @@ Now, any change you make to the files in the cloned repository, will
 be automatically reflected in the installed Python package.
 
 
+You don't, however, need to install the package (or may not want
+to). The code in the package can be run directly from within its
+directory; there is no need to compile anything beforehand. Thus,
+running all the examples after ``cd kcs`` but without ``pip install -e
+.`` will also work. The disadvantage is that you can't run it from any
+other directory, so all output files will end up in that directory as
+well.
+
 Steps
 =====
 
@@ -213,13 +226,15 @@ may be worth to leave this option out a first time, to see that the
 notices are indeed not really a problem.
 
 Note that optional arguments can be put before or after the mandatory
-arguments (``@cmip-tas.list`` is the only required argument here). The
-``-m`` is an option to ``python``, not to ``kcs.extraction``.
+arguments (``@cmip-tas.list`` is the only required argument here). As
+mentioned earlier, the ``-m`` is an option to ``python``, not to
+``kcs.extraction``.
 
 The ``global`` area is predefined; there are also ``nlpoint``,
 ``nlbox``, ``rhinebasin`` and ``weurbox`` areas. For their
-definitions, see the ``kcs/config/__init__.py`` file; you can also add
-more definitions here.
+definitions, see the ``kcs/config/default.py`` file. You could add
+more definitions there, but it's better to provide your own
+configuration file for doing that.
 
 All areas are averaged using a weighted-average, except for the single
 point area (``nlpoint``): this uses a standard linear interpolation
@@ -308,14 +323,15 @@ datasets involved.
 .. code-block:: bash
 
    python -m kcs.tas_change  @cmip-tas-global-averaged.list \
-       --outfile=tas_change.csv --on-no-match=randomrun -v  \
+       --outfile=tas_change_cmip.csv --on-no-match=randomrun -v  \
        --norm-by=run  --reference-period 1991 2020
 
 Notes on the options:
 
 * ``--outfile``: the output CSV file. This contains the percentiles
   and mean of the normalised ``tas`` value for each year. The
-  statistics are calculated across all individual model runs.
+  statistics are calculated across all individual model runs. This
+  option is required (but given as an option, for clarity).
 
 * ``--on-no-match``: if a future experiment run can't be matched with
   a historical experiment run, an attempt is made to pick another,
@@ -340,6 +356,22 @@ Notes on the options:
   and run from January 1 to December 12, thus each reference period is
   exactly 30 years.
 
+The ``--on-no-match`` and ``--norm-by`` options already have their
+default set to the given values (``randomrun`` and ``run``,
+respectively), so there is really no need to give them; that has been
+done here for the explanation. The ``--reference-period`` also has a
+default setting, but you may want to make this explicit, if you are
+switching between different input datasets. Thus:
+
+.. code-block:: bash
+
+   python -m kcs.tas_change  @cmip-tas-global-averaged.list \
+       --outfile=tas_change_cmip.csv --reference-period 1991 2020
+
+does the same thing, and is easier to read.
+
+Don't forget the ``-v`` (or ``-vv``, or ``-vv```) generic option, to
+get some logging information.
 
 The output is a CSV file, which looks somewhat as follows::
 
@@ -354,6 +386,8 @@ The output is a CSV file, which looks somewhat as follows::
 (Numbers are truncated to just three decimal digits for display
 purposes.)
 
+Thus, the columns contain the 5, 10, etc percentiles of the (CMIP)
+distribution, for each year, as well as the mean.
 
 This CSV file is input for the plot below, and for step 1b.
 
@@ -366,9 +400,10 @@ command:
 
 .. code-block:: bash
 
-    python -m kcs.tas_change.plot  tas_change.csv cmip6.png \
+    python -m kcs.tas_change.plot  tas_change_cmip.csv cmip.png \
         --xrange 1950 2100 --ylabel 'Temperature change [${}^{\circ}$]' \
-        --title 'Global year temperature change'  --smooth 7 --yrange -1 6
+        --title 'Global year temperature change'  --smooth 7 --yrange -1 6 \
+		--grid --legend
 
 The module has two required arguments: the CSV file calculated above,
 and an output figure file name (its extension will determine the file
@@ -387,13 +422,13 @@ Step 1b: matching the model of interest with the CMIP tas change
 This step takes the result of step 1a, and matches the global CMIP
 ``tas`` change with the global ``tas`` change of our model of
 interest, for relevant epochs. The user picks one or more epochs, and
-percentiles, and the procedure will match the CMIP change in ``tas``
-with an identical change in ``tas`` for the model of interest, which
-results in a specific year, calculated over a 30-year period. These
-define the scenarios: high and low temperature change (90 and 10
-percentile CMIP change) for middle and end of centeury (2050 and 2085;
-2085, because the 30-year period average ranges from 2070 to 2099, the
-end of the CMIP data).
+CMIP percentiles, and the procedure will match the CMIP change in
+``tas`` with an identical change in ``tas`` for the model of interest,
+which results in a specific year, calculated over a 30-year
+period. These define the scenarios: high and low temperature change
+(e.g., 90 and 10 percentile CMIP change) for middle and end of
+centeury (2050 and 2085; 2085, because the 30-year period average
+ranges from 2070 to 2099, the end of the CMIP data).
 
 The output is a CSV file, which contains the so-called steering
 table. This table contains the matching period in our model of
@@ -416,7 +451,7 @@ be different realizations of the same model-experiment.
 
 The module takes two mandatory input files: the CMIP CSV file with the
 tas change computed previously, and a list of globally-averaged tas
-data of the model of interest, EC-EARTH.
+data of the model of interest, EC-EARTH in our example.
 
 The ``--scenario`` options set the various scenarios of interest. The
 option can be repeated, and takes three values: a name, an epoch and a
@@ -463,19 +498,22 @@ the epoch-percentile points), you can use the following command:
 
 .. code-block:: bash
 
-    python -m kcs.steering.plot tas_change.csv steering.csv cmip-ecearth-scenarios.png \
-        --ecearth-data @ecearth-tas-global.list --reference-epoch 1995 \
-        --ylabel 'Temperature increase [${}^{\circ}$]'  --smooth 10
+    python -m kcs.steering.plot tas_change.csv steering.csv \
+	    --outfile cmip-ecearth-scenarios.png \
+        --extra-data @ecearth-tas-global.list --reference-epoch 2005 \
+        --ylabel 'Temperature increase [${}^{\circ}$]'  --smooth 10 \
+		--grid --legend
 
-This command has three mandatory arguments:
+This command has three mandatory arguments (one of them given as an
+option):
 
-* The table with the tas change percentiles versus years (as before),
+* the table with the tas change percentiles versus years (as before),
   in CSV format.
 
-* The steering table, in CSV format.
+* the steering table, in CSV format.
 
-* An output figure file name (the extension will automatically
-  determines the file type).
+* ``--outfile``: an output figure file name (the extension will
+  automatically determines the file type).
 
 The ``--smooth`` option is as before for other commands: it applies a
 rolling average, in this case with a window of 10 (years).
@@ -558,6 +596,7 @@ CSV file contains both a mean and percentiles along both axes::
 purposes.)
 
 
+
 Plotting the CMIP changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -604,7 +643,9 @@ The resulting ``pr_change_2050W_jja_nlpoint_ecearth.csv`` looks as follows::
     r3i1p1,3.611-05,3.282-05,2.162-05,1.297-05,3.526-05,3.011-05,5.397-05,5.524-05,-9.102,-40.012,-14.606,2.354
     ...
 
-(Numbers are truncated as usual for display purposes. The number of displayed rows and columns is also limited: not all default percentiles are shown, just 10, 50 and 90.)
+(Numbers are truncated as usual for display purposes. The number of
+displayed rows and columns is also limited: not all default
+percentiles are shown, just 10, 50 and 90.)
 
 For each realization, there is a row. The rows contains the
 percentiles for the reference (control) period, the future period
@@ -621,6 +662,47 @@ overplot the individual EC-EARTH runs:
         --epoch 2050 --text 'precip, DJF', --ytitle 'Change (%)' --ylimits -60 45 \
         --scenario-run G pr_change_G2050_jja_nlpoint_ecearth.csv \
         --scenario-run W pr_change_W2050_jja_nlpoint_ecearth.csv
+
+A full steering table at a time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The code above requires one to read the steering table, and extract
+the relevant period for each scenario. It is easier, and safer (less
+manual errors) to automatically do this, and have a script run the
+above calculation for each scenarion in a steering table. A simple
+script exists, simply called ``kcs.change_perc.runall``, that takes
+the steering table instead of a period.
+
+It also conveniently calculates the percentiles for our model of
+interest, and creates the relevant output files (the so-called
+``run-changes`` for our model of interest, detailing the percentiles
+for each run individually, and the distribution of percentiles for the
+CMIP "background" data). The output files are named automatically,
+deduced from the scenarion name, epoch, variable and season.
+
+It also creates the plot, with the model of interest
+overplotted. Since the plot names are also auto-generated, you can
+only specify the plot type: ``pdf`` or ``png``. An obvious
+disadvantage is that individual specifications of a plot can't be set,
+such as the y-range (``--ylimits``).
+
+
+All in all, this looks like:
+
+.. code-block:: bash
+
+    python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list \
+	  --season djf  --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list \
+	  --relative pr --no-matching --plottype pdf --write-csv
+
+Note that options like ``--no-matching` are still provided, and apply
+*only* to the model of interest, that is, the EC-EARTH data here.
+
+
+For a full (parallel) run of all variables, epochs and seasons, see
+the ``extras/percentile-all.bash`` script, which is a bash script
+wrapped around the above command.
+
 
 
 Step 3: resample the runs of the model of interest
@@ -957,7 +1039,13 @@ resampled runs, but that also means it indicates which part of our
 provided our regional model input runs match one-to-one with our
 global model-of-interest runs.
 
-Finally, there will also be numerous CSV output files, named something like ``resampled_<epoch>_<G/W>_<H/L>_<var>_<season>.csv``. These are similar to the ``pr_change_W2050_jja_nlpoint_ecearth.csv`` files mentioned further above: they contain, for each resampled run, the necessary statistics, and are in fact identical to the ``diff`` datasets in the HDF 5 file. For example, ``resampled_2050_G_H_pr_mam.csv`` looks as follows::
+Finally, there will also be numerous CSV output files, named something
+like ``resampled_<epoch>_<G/W>_<H/L>_<var>_<season>.csv``. These are
+similar to the ``pr_change_W2050_jja_nlpoint_ecearth.csv`` files
+mentioned further above: they contain, for each resampled run, the
+necessary statistics, and are in fact identical to the ``diff``
+datasets in the HDF 5 file. For example,
+``resampled_2050_G_H_pr_mam.csv`` looks as follows::
 
     mean,5,10,25,50,75,90,95
     -4.869,2.980,-8.869,-12.487,-5.377,-5.380,-6.442,-1.308
@@ -1015,3 +1103,14 @@ use the ``--only-scenario-mean`` option:
         --scenario-run G_L resampled_2050_G_L_pr_jja.csv \
         --scenario-run W_L resampled_2050_W_L_pr_jja.csv
         --only-scenario-mean
+
+
+Running it all together
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To run this all together, resampling all scenarios and creating all
+the plots, and doing this in parallel, there is another helper bash
+script: ``extras/resample-and-plot-all.bash``, which does what it
+says. It does not use any new Python module: it just wraps around the
+previous commands in this section, using the ``--scenario`` option of
+``kcs.resample`` to be able to run things in parallel.
