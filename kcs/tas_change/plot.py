@@ -97,6 +97,12 @@ def plot(figure, percs, dataset=None, xlabel=None, ylabel=None,
     if yrange:
         plt.axis([xrange[0], xrange[1], yrange[0], yrange[1]])
     plt.xticks([datetime(year, 1, 1) for year in np.arange(1950, 2100, 20)])
+    return figure
+
+
+def finish(xlabel=None, ylabel=None, title=None, legend=True, grid=True):
+    """Add labels, a legend and a grid"""
+
     if not xlabel:
         xlabel = 'Year'
     plt.xlabel(xlabel, fontsize=18)
@@ -104,17 +110,23 @@ def plot(figure, percs, dataset=None, xlabel=None, ylabel=None,
         plt.ylabel(ylabel, fontsize=18)
     if title:
         plt.title(title, fontsize=22)
-    plt.grid()
-    return figure
+    if grid:
+        plt.grid()
+    if legend:
+        plt.legend()
 
 
 def run(percentiles, outfile, dataset=None, xlabel=None, ylabel=None,
-        xrange=None, yrange=None, title=None, smooth=None):
+        xrange=None, yrange=None, title=None, grid=True, legend=True,
+        smooth=None):
     figure = plt.figure(figsize=(12, 8))
     if smooth:
         percentiles = percentiles.rolling(window=smooth, center=True).mean()
-    figure = plot(figure, percentiles, xlabel=xlabel, ylabel=ylabel,
-                  xrange=xrange, yrange=yrange, title=title)
+    plot(figure, percentiles, xlabel=xlabel, ylabel=ylabel,
+         xrange=xrange, yrange=yrange, title=title)
+
+    finish(xlabel=xlabel, ylabel=ylabel, title=title, grid=grid, legend=legend)
+
     plt.tight_layout()
     plt.savefig(outfile)
 
@@ -131,6 +143,8 @@ def parse_args():
     parser.add_argument('--xrange', type=float, nargs=2)
     parser.add_argument('--yrange', type=float, nargs=2)
     parser.add_argument('--title')
+    parser.add_argument('--legend', action='store_true')
+    parser.add_argument('--grid', action='store_true')
     parser.add_argument('--smooth', type=int, nargs='?', const=10)
     args = parser.parse_args()
     return args
@@ -146,7 +160,8 @@ def main():
     percentiles = pd.read_csv(args.infile, index_col=0)
     percentiles.index = pd.to_datetime(percentiles.index)
     run(percentiles, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
-        xrange=args.xrange, yrange=args.yrange, title=args.title, smooth=args.smooth)
+        xrange=args.xrange, yrange=args.yrange, title=args.title,
+        grid=args.grid, legend=args.legend, smooth=args.smooth)
     logger.info("Done processing")
 
 

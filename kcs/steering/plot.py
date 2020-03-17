@@ -21,8 +21,9 @@ import iris
 from kcs.config import default_config, read_config
 import kcs.utils.logging
 import kcs.utils.argparse
-from kcs.tas_change.plot import plot as cmipplot
-from kcs.utils.atlist import atlist
+from ..tas_change.plot import plot as cmipplot
+from ..tas_change.plot import finish as plot_finish
+from ..utils.atlist import atlist
 from . import read_data, normalize_average_dataset, num2date
 
 
@@ -55,6 +56,7 @@ def plot_extra(cube, relative=False, smooth=None, years=None, label=''):
 
 def plot_scenarios(scenarios, reference_epoch=None):
     """DUMMY DOCSTRING"""
+
     if reference_epoch:
         plt.scatter(datetime(reference_epoch, 1, 1), 0, s=100, marker='s', color='black', zorder=6)
     for scenario in scenarios:
@@ -64,15 +66,15 @@ def plot_scenarios(scenarios, reference_epoch=None):
 
 
 def run(percentiles, steering_table, outfile, reference_epoch=None,
-        xlabel=None, ylabel=None, xrange=None, yrange=None, title=None, smooth=None,
+        xlabel=None, ylabel=None, xrange=None, yrange=None, title=None,
+        grid=True, legend=True, smooth=None,
         extra_data=None, relative=False, extra_label=''):
     """DUMMY DOCSTRING"""
 
     figure = plt.figure(figsize=(12, 8))
     if smooth:
         percentiles = percentiles.rolling(window=smooth, center=True).mean()
-    figure = cmipplot(figure, percentiles, xlabel=xlabel, ylabel=ylabel,
-                      xrange=xrange, yrange=yrange, title=title)
+    figure = cmipplot(figure, percentiles, xrange=xrange, yrange=yrange)
 
     if extra_data:
         years = [dt.year for dt in percentiles.index]
@@ -88,6 +90,8 @@ def run(percentiles, steering_table, outfile, reference_epoch=None,
         scenario['percentile'] = percentiles.loc[epoch, percentile]
 
     plot_scenarios(scenarios, reference_epoch=reference_epoch)
+
+    plot_finish(xlabel=xlabel, ylabel=ylabel, title=title, grid=grid, legend=legend)
 
     plt.tight_layout()
     plt.savefig(outfile)
@@ -118,6 +122,8 @@ def parse_args():
     parser.add_argument('--xrange', type=float, nargs=2)
     parser.add_argument('--yrange', type=float, nargs=2)
     parser.add_argument('--title')
+    parser.add_argument('--legend', action='store_true')
+    parser.add_argument('--grid', action='store_true')
     parser.add_argument('--extra-label', help="Label to indicate the extra model data.")
     parser.add_argument('--smooth', type=int, nargs='?', const=10)
     args = parser.parse_args()
@@ -150,7 +156,8 @@ def main():
 
     run(percentiles, steering_table, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
         xrange=args.xrange, yrange=args.yrange, title=args.title, smooth=args.smooth,
-        extra_data=extra_data, relative=args.relative, extra_label=args.extra_label)
+        extra_data=extra_data, relative=args.relative, extra_label=args.extra_label,
+        reference_epoch=args.reference_epoch, grid=args.grid, legend=args.legend)
     logger.info("Done processing")
 
 
