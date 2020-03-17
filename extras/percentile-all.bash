@@ -1,12 +1,12 @@
-#! /bin/bash
+#! /bin/bash -v
 
 # This uses the `kcs.change_perc.runall` module, which is a small
 # utility that uses a steering table as input to deduce the correct
 # periods for calculating the statistics for the EC-EARTH data.
 
 # It will also creates plots of the CMIP distribution with the
-# individual EC-EARTH runs overplotted. Output file names are
-# generated automatically, following the pattern
+# individual runs of the 'extra' model overplotted. Output file names
+# are generated automatically, following the pattern
 # "{var}_{epoch}_{season}.{ext}".
 
 
@@ -19,11 +19,10 @@ do
 
         for var in tas pr
         do
-                listname1="@cmip5-${var}-nlpoint-averaged.list"
-                listname2="@ecearth-${var}-nlpoint-averaged.list"
+                listname1="@cmip-${var}-nlpoint-averaged.list"
+                listname2="@extra-${var}-nlpoint-averaged.list"
                 for season in djf jja mam son
                 do
-                        echo "python -m kcs.change_perc.runall $listname1 --season $season  --steering $fname --runs $listname2 --relative pr --no-matching -v --plottype pdf --write-csv  &"
                         python -m kcs.change_perc.runall $listname1 --season $season  --steering $fname --runs $listname2 --relative pr --no-matching -v --plottype pdf --write-csv  &
                 done
 				# Run four processes at a time.

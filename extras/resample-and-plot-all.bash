@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -v
 
 # Calculate the resampling for the input runs.
 # Also create plots if the four G/W_H/L scenarios have been calculated for an epoch.
@@ -10,8 +10,7 @@ do
 		do
 				for precip in L H
 				do
-						echo "python -m kcs.resample  @ecearth-all-nlpoint-short.list --ranges step2ranges.toml --steering steering.csv --penalties penalties.toml --relative pr -vv --nstep3   --precip-scenario L 4 --precip-scenario H 8 --scenario $scenario $epoch $precip --indices-out indices_${scenario}_${epoch}_${precip}.h5 --resamples-out resamples_${scenario}_${epoch}_${precip}.h5 &"
-						python -m kcs.resample  @ecearth-all-nlpoint-short.list --ranges step2ranges.toml --steering steering.csv --penalties penalties.toml --relative pr -vv --nstep3 12  --precip-scenario L 4 --precip-scenario H 8 --scenario $scenario $epoch $precip --indices-out indices_${scenario}_${epoch}_${precip}.h5 --resamples-out resamples_${scenario}_${epoch}_${precip}.h5 &
+						python -m kcs.resample  @extra-all-nlpoint.list --ranges step2ranges.toml --steering steering.csv --penalties penalties.toml --relative pr -vv --nstep3 12  --precip-scenario L 4 --precip-scenario H 8 --scenario $scenario $epoch $precip --indices-out indices_${scenario}_${epoch}_${precip}.h5 --resamples-out resamples_${scenario}_${epoch}_${precip}.h5 &
 				done
 		done
 		# Run only four processes at a time.
@@ -34,7 +33,7 @@ do
 				fi
 				for season in djf mam jja son
 				do
-						# ${string^^} change the string to upper case
+						# ${string^^} changes the string to upper case
 						# This requires Bash 4!
 						python -m kcs.change_perc.plot ${var}_${epoch}_${season}_perc_distr.csv \
 							   ${var}_change_${epoch}_${season}_nlpoint.png \
