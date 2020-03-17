@@ -13,7 +13,10 @@ of input data, if e.g. the requested range is large.)
 
 Example usage:
 
-$ python -m kcs.steering  distribution-percentiles.csv  data/ecearth/tas-global-averaged/tas_Amon_ECEARTH23_rcp85_186001-210012_*.nc --scenario G 2050 10 --scenario W 2050 90 --scenario G 2085 10 --scenario W 2085 90  --rolling-mean 10 --outfile steering.csv
+$ python -m kcs.steering  tas_change.csv  @extra-tas-global-averaged.list \
+      --scenario G 2050 10 --scenario W 2050 90 \
+      --scenario G 2085 10 --scenario W 2085 90 \
+       --rolling-mean 10 --outfile steering.csv
 
 """
 
@@ -24,15 +27,15 @@ import pathlib
 import itertools
 import pandas as pd
 import iris
-import kcs.utils.argparse
-import kcs.utils.logging
-from kcs.utils.atlist import atlist
+from ..config import read_config, default_config
+from ..utils.argparse import parser as kcs_parser
+from ..utils.logging import setup as log_setup
+from ..utils.atlist import atlist
+from ..utils.attributes import get as get_attrs
 from . import run
 
 
-REFERENCE_PERIOD = (1981, 2010)
-
-logger = logging.getLogger('kcs.steering')
+logger = logging.getLogger('kcs.steering')  # pylint: disable=invalid-name
 
 
 def read_data(paths, info_from=('attributes', 'filename'),
@@ -41,7 +44,7 @@ def read_data(paths, info_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=info_from,
         attributes=attributes, filename_pattern=filename_pattern)
 
@@ -50,10 +53,10 @@ def read_data(paths, info_from=('attributes', 'filename'),
 
 def parse_args():
     """DUMMY DOC-STRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('csv', help="CSV file with distribution percentiles.")
-    parser.add_argument('files', nargs='+', help="EC-EARTH datasets")
+    parser.add_argument('files', nargs='+', help="model of interest datasets")
     parser.add_argument('--scenario', required=True, nargs=3, action='append',
                         help="Specify a scenario. Takes three arguments: name, "
                         "epoch and percentile. This option is required, and can "
@@ -73,12 +76,14 @@ def parse_args():
                         "of this value, which should be a positive floating point "
                         "value. Default is not to round")
     parser.add_argument('--reference-period', nargs=2, type=int,
-                        default=list(REFERENCE_PERIOD),
-                        help="Reference period (to normalize EC-EARTH data): start and end year. "
-                        "Years are inclusive (i.e., Jan 1 of 'start' up to and "
-                        f"including Dec 31 of 'end'). Default {REFERENCE_PERIOD}.")
+                        help="Reference period (to normalize our model of interestdata): "
+                        "start and end year. Years are inclusive (i.e., Jan 1 of 'start' "
+                        "up to and including Dec 31 of 'end').")
 
     args = parser.parse_args()
+    read_config(args.config)
+    if not args.reference_period:
+        args.reference_period = default_config['data']['extra']['control_period']
     args.paths = [pathlib.Path(filename) for filename in args.files]
     args.scenarios = [dict(zip(('name', 'epoch', 'percentile'), scenario))
                       for scenario in args.scenario]
@@ -91,7 +96,7 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

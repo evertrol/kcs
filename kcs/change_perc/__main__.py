@@ -31,6 +31,7 @@ from ..utils.logging import setup as log_setup
 import kcs.utils.attributes
 from ..utils.matching import match
 from ..utils.atlist import atlist
+from ..config import read_config, default_config
 from . import run
 
 
@@ -133,7 +134,6 @@ def parse_args():
                         help="One or more values for the change in precipitation per degree "
                         "temperature change, in percents. Default is [4, 8].")
     parser.add_argument('--reference-period', type=int, nargs=2,
-                        default=list(REFERENCE_PERIOD),
                         help="Reference period in years (inclusive)")
 
     parser.add_argument('--no-matching', action='store_true', help="Perform no matching "
@@ -161,6 +161,9 @@ def parse_args():
                         "to indicate a historical run.")
 
     args = parser.parse_args()
+    read_config(args.config)
+    if args.reference_period is None:
+        args.reference_period = default_config['data']['cmip']['control_period']
     args.paths = [pathlib.Path(filename) for filename in args.files]
 
     return args

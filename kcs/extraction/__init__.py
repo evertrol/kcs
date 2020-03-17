@@ -25,8 +25,7 @@ from kcs.types import Data
 from ..utils.io import load_cube
 from ..utils.coord import fixcoords, extract_areas
 from kcs.utils.date import months_coord_to_days_coord
-import kcs.config
-
+from ..config import default_config
 
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -53,7 +52,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
                    average_area=True, gridscheme='area', template=None,
                    mp=False, tempdir=None, ignore_common_warnings=False):
     if template is None:
-        template = kcs.config.default_config['data']['extraction']['template']
+        template = default_config['data']['extraction']['template']
     if isinstance(path, list):
         realizations = set(get_realization_from_path(p) for p in path)
         if len(realizations) > 1:
@@ -145,7 +144,7 @@ def process(paths, areas, regrid=False, save_result=True, average_area=True,
             gridscheme='area', nproc=1, template=None, tempdir=None,
             subdir_per_realization=False, ignore_common_warnings=False):
     if template is None:
-        template = kcs.config.default_config['data']['extraction']['template']
+        template = default_config['data']['extraction']['template']
     if subdir_per_realization:
         pathlist = defaultdict(list)
         for path in paths:
@@ -173,10 +172,11 @@ def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1
         template=None, tempdir=None, subdir_per_realization=False,
         ignore_common_warnings=False):
     if template is None:
-        template = kcs.config.default_config['data']['extraction']['template']
+        template = default_config['data']['extraction']['template']
     paths = [pathlib.Path(str(path)) if not isinstance(path, pathlib.Path) else path
              for path in paths]
-    # No need to regrid the EC-EARTH data: all on the same grid
+    # No need to regrid the data of our model of interest: it should
+    # all be on the same grid
     data = process(paths, areas, regrid=regrid, save_result=save_result, average_area=average_area,
                    nproc=nproc, template=template, tempdir=tempdir,
                    subdir_per_realization=subdir_per_realization,

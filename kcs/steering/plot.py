@@ -101,9 +101,9 @@ def parse_args():
     parser.add_argument('steering_table', help="Input steering table CSV file")
     parser.add_argument('--outfile', required=True,
                         help="Output figure filename. The extension determines the file type.")
-    parser.add_argument('--extra-data', nargs='+', help="EC-EARTH data files. Using this "
+    parser.add_argument('--extra-data', nargs='+', help="Model of interest data files. Using this "
                         "option will overplot the average of the input data.")
-    parser.add_argument('--relative', action='store_true', help="Indicate the EC-EARTH data "
+    parser.add_argument('--relative', action='store_true', help="Indicate the model data "
                         "should be calculated as relative change, as opposed to absolute change.")
     parser.add_argument('--reference-period', type=int, nargs=2,
                         help="Reference period to normalize the extra data to (if input). "
@@ -145,7 +145,6 @@ def main():
     if args.extra_data:
         paths = list(itertools.chain.from_iterable(atlist(path) for path in args.extra_data))
         dataset = read_data(paths)
-        print(args.reference_period)
         extra_data = normalize_average_dataset(dataset['cube'], relative=args.relative,
                                                reference_period=args.reference_period)
 

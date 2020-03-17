@@ -173,8 +173,8 @@ periods = {2050 = [2036, 2065], 2085 = [2071, 2100]}
 
 # Control period defines the reference period to which to compare (and
 # possibly normalize) to.
-# CMIP5 would be [1981, 2010], CMIP6 would be [1991, 2020]
-control_period = [1991, 2020]
+# CMIP5 would be [1980, 2009], CMIP6 would be [1990, 2019]
+control_period = [1990, 2019]
 
 # Normalize the CMIP data to the control period.
 # Choices are "model", "experiment" or "run". These options vary from
@@ -214,7 +214,7 @@ on_fail = "randomrun"
 # This is the data of interest, for which a steering table will be
 # calculated, and whose runs will be resampled.
 
-control_period = [1991, 2020]
+control_period = [1990, 2019]
 
 [data.extra.matching]
 # An empty string means the datasets are already concatenated datasets: historical + future.
@@ -291,6 +291,11 @@ nstep3 = 8
 # Monte-Carlo number of samples
 nsample = 10_000
 
+# Number of simultaneous processes for the calculations of step 1.
+# Note that for relatively few input runs (< 12), the overhead
+# generally costs more than multiprocessing wins.
+nproc = 1
+
 # TOML file that defines the percentiles ranges used in step 2
 step2table = "step2.toml"
 
@@ -303,4 +308,3 @@ step2table = "step2.toml"
 penalties = {1 = 0.0, 2 = 0.0, 3 = 1.0, 4 = 5.0}
 
 '''
-

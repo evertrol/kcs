@@ -1,19 +1,21 @@
-"""Usage example:
+"""Usage:
 
 # Calculate resamples for two scenarios, one epoch: G_L and G_H,
 # 2050. Set the required precipitation changes to 4% per global
 # temperature increase ('L') and 8% ('H')
 
-$ python -m kcs.resample @ecearth-all-nlpoint-short.list --steering steering.csv \
-    --ranges ranges.toml --precip-scenario L 4 --precip-scenario H 8 --relative pr \
+$ python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
+    --ranges ranges.toml --penalties penalties.toml --relative pr \
+    --precip-scenario L 4 --precip-scenario H 8 \
     --scenario G 2050 L --scenario G 2050 H -vv
 
 # Calculate resamples for all scenarios and epochs (eight
 # total). Naming follows the name and epoch columns from the steering
 # table, plus the names for the precipitation scenarios.
 
-$ python -m kcs.resample @ecearth-all-nlpoint-short.list --steering steering.csv \
-    --ranges ranges.toml --precip-scenario L 4 --precip-scenario H 8 --relative pr
+$ python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
+    --ranges ranges.toml --penalties penalties.toml --relative pr \
+    --precip-scenario L 4 --precip-scenario H 8
 
 """
 
@@ -29,20 +31,14 @@ import numpy as np
 import pandas as pd
 import h5py
 import iris
-import kcs.utils.argparse
-import kcs.utils.logging
-from kcs.utils.atlist import atlist
-import kcs.utils.attributes
+from ..utils.argparse import parser as kcs_parser
+from ..utils.logging import setup as setup_logging
+from ..utils.atlist import atlist
+from ..utils.attributes import get as get_attrs
+from ..config import read_config, default_config
 from . import run
 
 
-NPROC = 1
-CONTROL_PERIOD = (1981, 2010)
-NSTEP1 = 1000
-N2 = 50
-NSTEP3 = 8
-NSAMPLE = 10_000
-NSECTIONS = 6
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 
 
@@ -62,7 +58,7 @@ def read_data(paths, attributes_from=('attributes', 'filename'),
         return pd.DataFrame({'cube': cubes, 'path': paths})
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=attributes_from,
         attributes=attributes, filename_pattern=filename_pattern)
 
@@ -186,7 +182,7 @@ def str2bool(string):
 
 def parse_args():
     """Parse the command line arguments"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
 
     parser.add_argument('files', nargs='+', help="NetCDF4 files to resample.")
@@ -202,15 +198,15 @@ def parse_args():
                         help="Label and percentage of winter precipitation increase per degree. "
                         "For example, L 4, or H 8. The label should correspond to the third value "
                         "in the --scenarion option, if given.")
-    parser.add_argument('--nstep1', type=int, default=NSTEP1,
+    parser.add_argument('--nstep1', type=int,
                         help="number of S1 resamples to keep")
-    parser.add_argument('--nstep3', type=int, default=NSTEP3,
+    parser.add_argument('--nstep3', type=int,
                         help="number of S3 resamples to keep")
-    parser.add_argument('--nsample', type=int, default=NSAMPLE,
+    parser.add_argument('--nsample', type=int,
                         help="Monte Carlo sampling number")
-    parser.add_argument('--control-period', nargs=2, type=int, default=CONTROL_PERIOD,
-                        help="Control period given by start and end year (inclusive)")
-    parser.add_argument('--nsections', type=int, default=NSECTIONS,
+    parser.add_argument('--reference-period', nargs=2, type=int,
+                        help="Reference period given by start and end year (inclusive)")
+    parser.add_argument('--nsections', type=int,
                         help="Number of sections to slice the periods into. This is done by "
                         "integer division, and any remains are discarded. Thus, a period of "
                         "30 years (inclusive) and `--nsections=6` (the default) results in six "
@@ -226,11 +222,10 @@ def parse_args():
     parser.add_argument('--resamples-out', default="resamples.h5", help="HDF 5 output file "
                         "for the resampled data.")
 
-    parser.add_argument('-N', '--nproc', type=int, default=NPROC,
-                        help="Number of simultaneous processes.")
+    parser.add_argument('-N', '--nproc', type=int, help="Number of simultaneous processes.")
 
     args = parser.parse_args()
-
+    read_config(args.config)
     args.paths = [pathlib.Path(filename) for filename in args.files]
 
     args.pr_scenarios = {}
@@ -244,6 +239,18 @@ def parse_args():
     for i in range(max(penalties.keys())+1, args.nstep3+1):
         penalties[i] = math.inf
     args.penalties = penalties
+    if args.reference_period is None:
+        args.reference_period = default_config['data']['extra']['control_period']
+    if args.nproc is None:
+        args.nproc = default_config['resampling']['nproc']
+    if args.nstep1 is None:
+        args.nstep1 = default_config['resampling']['nstep1']
+    if args.nstep3 is None:
+        args.nstep3 = default_config['resampling']['nstep3']
+    if args.nsample is None:
+        args.nsample = default_config['resampling']['nsample']
+    if args.nsections is None:
+        args.nsections = default_config['resampling']['nsections']
 
     return args
 
@@ -252,7 +259,7 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    setup_logging(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
@@ -266,7 +273,7 @@ def main():
 
     indices, diffs = run(dataset, steering_table, ranges, args.penalties,
                          args.nstep1, args.nstep3, args.nsample, args.nsections,
-                         args.control_period, relative=args.relative, nproc=args.nproc)
+                         args.reference_period, relative=args.relative, nproc=args.nproc)
 
     save_indices_h5(args.indices_out, indices)
     save_resamples(args.resamples_out, diffs)

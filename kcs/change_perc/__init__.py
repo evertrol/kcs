@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import iris
 from ..utils.constraints import EqualConstraint
+from ..config import default_config
 
 
 HISTORICAL_KEY = 'historical'
@@ -14,9 +15,12 @@ STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 logger = logging.getLogger(__name__)
 
 
-def calc_percentiles(dataset, period, relative=False, reference_period=REFERENCE_PERIOD):
+def calc_percentiles(dataset, period, relative=False, reference_period=None):
     """DUMMY DOCSTRING"""
     logger.info("Calculating percentiles")
+    if reference_period is None:
+        reference_period = default_config['data']['cmip']['control_period']
+
     refconstraint = iris.Constraint(year=lambda year:
                                     reference_period[0] <= year <= reference_period[1])
     constraint = iris.Constraint(year=lambda year: period[0] <= year <= period[1])
@@ -64,7 +68,6 @@ def calc_percentiles(dataset, period, relative=False, reference_period=REFERENCE
         stats[f'{col}'] = stats[f'fut-{col}'] - stats[f'ref-{col}']
         if relative:
             stats[f'{col}'] = (stats[f'{col}'] / stats[f'ref-{col}']) * 100
-
     return stats
 
 
@@ -91,8 +94,10 @@ def extract_season(cubes, season):
     return cubes
 
 
-def run(dataset, season, period, relative=False, reference_period=REFERENCE_PERIOD):
+def run(dataset, season, period, relative=False, reference_period=None):
     """DUMMY DOCSTRING"""
+    if reference_period is None:
+        reference_period = default_config['data']['cmip']['control_period']
     if season != 'year':
         dataset['cube'] = extract_season(dataset['cube'], season)
     percs = calc_percentiles(dataset, period=period, reference_period=reference_period,

@@ -20,6 +20,7 @@ from . import run
 from ..utils.logging import setup as log_setup
 from ..utils.argparse import parser as kcs_parser
 from ..utils.atlist import atlist
+from ..config import read_config, default_config
 
 
 logger = logging.getLogger('kcs.extraction')  # pylint: disable=invalid-name
@@ -28,7 +29,7 @@ logger = logging.getLogger('kcs.extraction')  # pylint: disable=invalid-name
 def parse_args():
     """Parse the command line arguments"""
 
-    areas = list(kcs.config.default_config['areas'].keys())
+    areas = list(default_config['areas'].keys())
 
     class ListAreas(argparse.Action):
         """Helper class for argparse to list available areas and exit"""
@@ -60,12 +61,12 @@ def parse_args():
     parser.add_argument('--subdir-per-realization', action='store_true')
     parser.add_argument('--ignore-common-warnings', action='store_true')
     args = parser.parse_args()
-    kcs.config.read_config(args.config)
+    read_config(args.config)
     if args.template is None:
-        args.template = kcs.config.default_config['data']['extraction']['template']
+        args.template = default_config['data']['extraction']['template']
     args.save_result = not args.no_save_results
     args.average_area = not args.no_average_area
-    args.area = {name: kcs.config.default_config['areas'][name] for name in args.area}
+    args.area = {name: default_config['areas'][name] for name in args.area}
     args.area = {key: None if value == 'global' else value for key, value in args.area.items()}
     return args
 

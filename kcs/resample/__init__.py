@@ -12,18 +12,11 @@ import logging
 import numpy as np
 import pandas as pd
 import iris
+from ..config import default_config
 
 
-NPROC = 1
 ALLSEASONS = ['djf', 'mam', 'jja', 'son']
-NSTEP1 = 1000
-NSTEP2 = 50
-NSTEP3 = 8
-NSAMPLE = 10_000
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
-CONTROL_PERIOD = (1981, 2010)
-NSECTIONS = 6
-RELATIVE = ['pr']
 
 
 logger = logging.getLogger(__name__)   # pylint: disable=invalid-name
@@ -167,8 +160,11 @@ def prepare_data(dataset, variables, period, control_period, nsections):
     return data, indices, means, ndata
 
 
-def calculate_s1(means, indices, target, var='pr', season='djf', nproc=NPROC):
+def calculate_s1(means, indices, target, var='pr', season='djf', nproc=None):
     """Calculate the subset S1: winter precipitation change equals `target`"""
+
+    if not nproc:
+        nsections = default_config['resampling']['nproc']
 
     # Calculate the procentual change in winter precipitation for all sections individually,
     # With respect to an overall-averaged control period
@@ -242,13 +238,18 @@ def calculate_s2(means, indices, scenarios):
     return s2_indices
 
 
-def calculate_s3(indices_dict, penalties, nstep3=NSTEP3, nsample=NSAMPLE,
+def calculate_s3(indices_dict, penalties, nstep3=None, nsample=None,
                  minimum_penalty=None):
     """Calculate the subset S3: find a subset with the least re-use of
     segments, using random sampling"""
 
+    if not nstep3:
+        nstep3 = default_config['resampling']['nstep3']
+    if not nsample:
+        nsample = default_config['resampling']['nsample']
     if minimum_penalty is None:
         minimum_penalty = np.finfo(float).eps
+
     s3_indices = {}
     rng = np.random.default_rng()   # pylint: disable=no-member
     for period, indices in indices_dict.items():
@@ -258,7 +259,6 @@ def calculate_s3(indices_dict, penalties, nstep3=NSTEP3, nsample=NSAMPLE,
         best = np.inf
         for i in range(nsample):
             choice = rng.choice(indices, size=nstep3, replace=False)
-
             penalty = 0
             for column in choice.T:
                 _, counts = np.unique(column, return_counts=True)
@@ -277,7 +277,7 @@ def calculate_s3(indices_dict, penalties, nstep3=NSTEP3, nsample=NSAMPLE,
 
 
 def find_resamples(indices, means, precip_change, ranges, penalties,
-                   nstep1=NSTEP1, nstep3=NSTEP3, nsample=NSAMPLE, nproc=NPROC):
+                   nstep1=None, nstep3=None, nsample=None, nproc=None):
     """Find the (best) resamples
 
     This does the actual work:
@@ -299,21 +299,30 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     """
     logger.debug("Calculating S1")
     logger.debug("Precipitation change: %.1f", precip_change)
-    s1_indices = calculate_s1(means, indices, precip_change, nproc=nproc)
-    s1_indices['control'] = s1_indices['control'][:nstep1]
-    s1_indices['future'] = s1_indices['future'][:nstep1]
+    if not nstep1:
+        nstep1 = default_config['resampling']['nstep1']
+    if not nstep3:
+        nstep3 = default_config['resampling']['nstep3']
+    if not nsample:
+        nsample = default_config['resampling']['nsample']
+    if not nproc:
+        nsections = default_config['resampling']['nproc']
 
-    s2_indices = calculate_s2(means, s1_indices, ranges)
+    print(nstep1, nstep3, nsample, type(nstep1), type(nstep3), type(nsample))
+    indices = calculate_s1(means, indices, precip_change, nproc=nproc)
+    indices['control'] = indices['control'][:nstep1]
+    indices['future'] = indices['future'][:nstep1]
+
+    indices = calculate_s2(means, indices, ranges)
     logger.debug("The S2 subset has %d & %d indices for the control & future periods, resp.",
-                 len(s2_indices['control']), len(s2_indices['future']))
+                 len(indices['control']), len(indices['future']))
 
-    s3_indices = calculate_s3(s2_indices, penalties, nstep3=nstep3, nsample=nsample)
+    indices = calculate_s3(indices, penalties, nstep3=nstep3, nsample=nsample)
+
+    return indices
 
 
-    return s3_indices
-
-
-def resample(indices, data, variables, seasons, relative):
+def resample(indices, data, variables, seasons, relative, means):
     """Perform the actual resampling of data, given the resampled indices"""
 
     percs = list(map(float, STATS[1:]))
@@ -348,18 +357,31 @@ def resample(indices, data, variables, seasons, relative):
 
 
 def run(dataset, steering_table, ranges, penalties,
-        nstep1=NSTEP1, nstep3=NSTEP3, nsample=NSAMPLE,
-        nsections=NSECTIONS, control_period=CONTROL_PERIOD,
-        relative=None, nproc=NPROC):
+        nstep1=None, nstep3=None, nsample=None,
+        nsections=None, reference_period=None,
+        relative=None, nproc=None):
     """DUMMY DOCSTRING"""
 
     if relative is None:
-        relative = RELATIVE
+        relative = default_config['variables']['relative']
+    if reference_period is None:
+        reference_period = default_config['data.extra']['control_period']
+    if not nstep1:
+        nstep1 = default_config['resampling']['nstep1']
+    if not nstep3:
+        nstep3 = default_config['resampling']['nstep3']
+    if not nsample:
+        nsample = default_config['resampling']['nsample']
+    if not nsections:
+        nsections = default_config['resampling']['nsections']
+    if not nproc:
+        nsections = default_config['resampling']['nproc']
 
     data = {}
     indices = {}
     means = {}
     variables = dataset['var'].unique()
+
     for _, row in steering_table.iterrows():
         period = tuple(map(int, row['period']))
         scenario = row['scenario']
@@ -368,7 +390,7 @@ def run(dataset, steering_table, ranges, penalties,
         mainkey = (str(epoch), scenario, subscenario)
         logger.info("Preparing data for %s_%s - %s %s", scenario, subscenario, epoch, period)
         data[mainkey], indices[mainkey], means[mainkey], _ = prepare_data(
-            dataset, variables, period, control_period, nsections)
+            dataset, variables, period, reference_period, nsections)
 
     all_indices = {}
     for _, row in steering_table.iterrows():
@@ -388,11 +410,11 @@ def run(dataset, steering_table, ranges, penalties,
 
         attrs = {
             'scenario': scenario, 'subscenario': subscenario, 'epoch': epoch,
-            'period': period, 'control-period': control_period,
+            'period': period, 'reference-period': reference_period,
             'ranges': rrange, 'winter-precip-change': precip_change}
         all_indices[mainkey] = {'data': final_indices, 'meta': attrs}
 
     diffs = resample(all_indices, data, variables, seasons=['djf', 'mam', 'jja', 'son'],
-                     relative=relative)
+                     relative=relative, means=means)
 
     return all_indices, diffs

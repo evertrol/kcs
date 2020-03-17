@@ -175,7 +175,7 @@ def parse_args():
     parser.add_argument('csvfile', help="Input CSV file with percentile change distribution.")
     parser.add_argument('output', help="Output figure file. The extension automatically "
                         "specifies the file type.")
-    parser.add_argument('--scenario-run', nargs=2, action='append',
+    parser.add_argument('--scenario-run', nargs=2, action='append', default=[],
                         help="Optional individual runs for scenarios, to overplot. "
                         "Can be used multiple times, once for each scenario. Takes "
                         "two argument: a scenario name (e.g., 'G', or 'W_L') and a "
@@ -218,7 +218,6 @@ def main():
     scenarios = OrderedDict()
     for name, csvfile in args.scenario_run:
         scenarios[name] = pd.read_csv(csvfile, index_col=False)
-
     run(data, labels, limits=args.ylimits,
         columns=args.columns, xlabels=args.xlabels,
         scenarios=scenarios, only_scenario_mean=args.only_scenario_mean)
