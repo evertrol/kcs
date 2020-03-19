@@ -187,7 +187,7 @@ def parse_args():
 
     parser.add_argument('files', nargs='+', help="NetCDF4 files to resample.")
     parser.add_argument('--steering', required=True, help="CSV file with steering information")
-    parser.add_argument('--ranges', required=True,
+    parser.add_argument('--ranges',
                         help="TOML file with lower and upper percentile bounds for all scenarios, "
                         "for future and control periods.")
 
@@ -211,9 +211,8 @@ def parse_args():
                         "integer division, and any remains are discarded. Thus, a period of "
                         "30 years (inclusive) and `--nsections=6` (the default) results in six "
                         "five-year periods")
-    parser.add_argument('--penalties', required=True,
-                        help="TOML file with penalties for multiple occurences. "
-                        "See example file for its format.")
+    parser.add_argument('--penalties',
+                        help="TOML file with penalties for multiple occurences.")
     parser.add_argument('--relative', nargs='+', default=['pr'], help="List of short variable "
                         "names for which the relative (percentual) change is to be calculated.")
 
