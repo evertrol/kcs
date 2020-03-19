@@ -75,8 +75,6 @@ from . import run as calculate
 from . import plot
 
 
-HISTORICAL_KEY = 'historical'
-REFERENCE_PERIOD = (1981, 2010)
 VARNAME = {
     'pr': "precip",
     'tas': "t2m",
@@ -106,8 +104,11 @@ def read_data(paths, attributes_from=('attributes', 'filename'),
     return dataset
 
 
-def concat_cubes(dataset, historical_key=HISTORICAL_KEY):
+def concat_cubes(dataset, historical_key=None):
     """Concatenate cubes into a dataset spanning the full time frame"""
+
+    if historical_key is None:
+        historical_key = default_config['data']['attributes']['historical_experiment']
 
     concatenated = pd.DataFrame(columns=dataset.columns)
     for model, group in dataset.groupby('model'):
@@ -158,8 +159,11 @@ def concat_cubes(dataset, historical_key=HISTORICAL_KEY):
 
 
 def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
-        reference_period=REFERENCE_PERIOD, plottype='png', writecsv=False):
+        reference_period=None, plottype='png', writecsv=False):
     """DUMMY DOCSTRING"""
+
+    if reference_period is None:
+        reference_period = default_config['data']['cmip']['control_period']
 
     if relative is None:
         relative = []
@@ -224,7 +228,7 @@ def parse_args():
                         "all variables. ")
     parser.add_argument('--relative', nargs='+', default=['pr'], help="List of short variable "
                         "names for which the relative (percentual) change is to be calculated.")
-    parser.add_argument('--reference-period', type=int, nargs=2, default=REFERENCE_PERIOD,
+    parser.add_argument('--reference-period', type=int, nargs=2,
                         help="Reference period (used both on CMIP data and special runs).")
     parser.add_argument('--reference-span', type=int, default=30,
                         help="Timespan around epoch of interest. Default is 30 years.")
@@ -254,7 +258,7 @@ def parse_args():
                         "run. 'randomrun' picks a random history run with the same 'physics' and "
                         "'initialization' values (but a different 'realization' value), while "
                         "'random' picks a random history run from all ensembles for that model.")
-    parser.add_argument('--historical-key', default=HISTORICAL_KEY, help="Attribute/filename value "
+    parser.add_argument('--historical-key', help="Attribute/filename value "
                         "to indicate a historical run.")
 
     args = parser.parse_args()
@@ -263,6 +267,10 @@ def parse_args():
 
     args.paths = [pathlib.Path(filename) for filename in args.files]
     args.runs = [pathlib.Path(filename) for filename in args.runs]
+    if args.reference_period is None:
+        args.reference_period = default_config['data']['extra']['control_period']
+    if args.historical_key is None:
+        args.historical_key = default_config['data']['attributes']['historical_experiment']
 
     return args
 

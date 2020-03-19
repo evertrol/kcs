@@ -27,8 +27,6 @@ from ..utils.atlist import atlist
 from . import read_data, normalize_average_dataset, num2date
 
 
-REFERENCE_PERIOD = (1981, 2010)
-
 # If we run as a runnable module, use a more appropriate logger name
 logname = 'kcs.steering.plotting' if __name__ == '__main__' else __name__
 logger = logging.getLogger(logname)

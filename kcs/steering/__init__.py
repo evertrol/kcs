@@ -27,8 +27,6 @@ from ..utils.attributes import get as get_attrs
 from ..utils.constraints import EqualConstraint, RangeConstraint
 
 
-REFERENCE_PERIOD = (1981, 2010)
-
 logger = logging.getLogger(__name__)
 
 
@@ -201,7 +199,7 @@ def calc(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
 
 
 def normalize_average_dataset(cubes, season=None, average_years=True, relative=False,
-                              reference_period=REFERENCE_PERIOD):
+                              reference_period=None):
     """Normalize and average a given iterable of cubes
 
     The dataset is normalized by, and averaged across, its individual
@@ -218,6 +216,9 @@ def normalize_average_dataset(cubes, season=None, average_years=True, relative=F
     cubes.
 
     """
+
+    if reference_period is None:
+        reference_period = default_config['data']['extra']['control_period']
 
     if season:
         cubes = extract_season(dataset, season)
@@ -243,7 +244,7 @@ def normalize_average_dataset(cubes, season=None, average_years=True, relative=F
 
 
 def run(dataset, percentiles, scenarios, season=None, average_years=True,
-        relative=False, reference_period=REFERENCE_PERIOD,
+        relative=False, reference_period=None,
         timespan=30, rolling_mean=0, rounding=None):
     """Calculate the percentile yearly change distribution for the input data
 
@@ -261,6 +262,9 @@ def run(dataset, percentiles, scenarios, season=None, average_years=True,
         averaged years, and normalized data
 
     """
+
+    if reference_period is None:
+        reference_period = default_config['data']['extra']['control_period']
 
     mean = normalize_average_dataset(dataset['cube'], season, average_years,
                                      relative=relative, reference_period=reference_period)

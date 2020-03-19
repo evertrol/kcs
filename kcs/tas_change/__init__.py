@@ -20,8 +20,6 @@ from ..utils.date import make_year_constraint_all_calendars
 from ..utils.constraints import EqualConstraint
 
 
-HISTORICAL_KEY = 'historical'
-REFERENCE_PERIOD = (1981, 2010)
 MINDATA = {'historical': 20, 'future': 4}
 PERC_PERIOD = (1950, 2100)
 

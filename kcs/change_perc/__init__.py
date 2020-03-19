@@ -8,8 +8,6 @@ from ..utils.constraints import EqualConstraint
 from ..config import default_config
 
 
-HISTORICAL_KEY = 'historical'
-REFERENCE_PERIOD = (1981, 2010)
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 
 logger = logging.getLogger(__name__)

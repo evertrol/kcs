@@ -35,9 +35,6 @@ from ..config import read_config, default_config
 from . import run
 
 
-HISTORICAL_KEY = 'historical'
-REFERENCE_PERIOD = (1981, 2010)
-
 logger = logging.getLogger('kcs.change_perc')
 
 
@@ -58,8 +55,11 @@ def read_data(paths, attributes_from=('attributes', 'filename'),
     return dataset
 
 
-def concat_cubes(dataset, historical_key=HISTORICAL_KEY):
+def concat_cubes(dataset, historical_key=None):
     """Concatenate cubes into a dataset spanning the full time frame"""
+
+    if historical_key is None:
+        historical_key = default_config['data']['attributes']['historical_experiment']
 
     concatenated = pd.DataFrame(columns=dataset.columns)
     for model, group in dataset.groupby('model'):
@@ -157,7 +157,7 @@ def parse_args():
                         "run. 'randomrun' picks a random history run with the same 'physics' and "
                         "'initialization' values (but a different 'realization' value), while "
                         "'random' picks a random history run from all ensembles for that model.")
-    parser.add_argument('--historical-key', default=HISTORICAL_KEY, help="Attribute/filename value "
+    parser.add_argument('--historical-key', help="Attribute/filename value "
                         "to indicate a historical run.")
 
     args = parser.parse_args()
@@ -166,6 +166,9 @@ def parse_args():
 
     if args.reference_period is None:
         args.reference_period = default_config['data']['cmip']['control_period']
+    if args.historical_key is None:
+        args.historical_key = default_config['data']['attributes']['historical_experiment']
+
     args.paths = [pathlib.Path(filename) for filename in args.files]
 
     return args
