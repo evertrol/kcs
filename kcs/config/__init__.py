@@ -1,5 +1,10 @@
+import os
+import logging
 import toml
 from .default import config_toml_string
+
+
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def adjust_config(config):
@@ -44,7 +49,13 @@ def nested_update(current, new):
 
 def read_config(filename):
     if not filename:
-        return default_config
+        filename = os.path.join(os.getcwd(), 'kcs-config.toml')
+        if not os.path.exists(filename):
+            logger.debug("using built-in config")
+            return default_config
+        logger.debug("using kcs-config.toml in local directory")
+    else:
+        logger.debug("reading config file %s", filename)
 
     with open(filename) as fh:
         config = toml.load(fh)
