@@ -21,15 +21,29 @@ import iris
 from ..config import default_config, read_config
 from ..utils.logging import setup as setup_logging
 from ..utils.argparse import parser as kcs_parser
+from ..utils.attributes import get as get_attrs
 from ..tas_change.plot import plot as cmipplot
 from ..tas_change.plot import finish as plot_finish
 from ..utils.atlist import atlist
-from . import read_data, normalize_average_dataset, num2date
+from . import normalize_average_dataset, num2date
 
 
 # If we run as a runnable module, use a more appropriate logger name
 logname = 'kcs.steering.plotting' if __name__ == '__main__' else __name__
 logger = logging.getLogger(logname)
+
+
+def read_data(paths, info_from=('attributes', 'filename'),
+              attributes=None, filename_pattern=None):
+    """DUMMY DOC-STRING"""
+    cubes = [iris.load_cube(str(path)) for path in paths]
+
+    # Get the attributes, and create a dataframe with cubes & attributes
+    dataset = get_attrs(
+        cubes, paths, info_from=info_from,
+        attributes=attributes, filename_pattern=filename_pattern)
+
+    return dataset
 
 
 def plot_extra(cube, relative=False, smooth=None, years=None, label=''):

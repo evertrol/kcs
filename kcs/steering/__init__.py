@@ -23,24 +23,10 @@ try:
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
-from ..utils.attributes import get as get_attrs
 from ..utils.constraints import EqualConstraint, RangeConstraint
 
 
 logger = logging.getLogger(__name__)
-
-
-def read_data(paths, info_from=('attributes', 'filename'),
-              attributes=None, filename_pattern=None):
-    """DUMMY DOC-STRING"""
-    cubes = [iris.load_cube(str(path)) for path in paths]
-
-    # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = get_attrs(
-        cubes, paths, info_from=info_from,
-        attributes=attributes, filename_pattern=filename_pattern)
-
-    return dataset
 
 
 def num2date(coord, index=None):
