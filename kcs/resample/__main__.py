@@ -5,7 +5,7 @@
 # temperature increase ('L') and 8% ('H')
 
 $ python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
-    --ranges ranges.toml --penalties penalties.toml --relative pr \
+    --conditions ranges.toml --penalties penalties.toml --relative pr \
     --precip-scenario L 4 --precip-scenario H 8 \
     --scenario G 2050 L --scenario G 2050 H -vv
 
@@ -14,7 +14,7 @@ $ python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
 # table, plus the names for the precipitation scenarios.
 
 $ python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
-    --ranges ranges.toml --penalties penalties.toml --relative pr \
+    --conditions ranges.toml --penalties penalties.toml --relative pr \
     --precip-scenario L 4 --precip-scenario H 8
 
 """
@@ -187,7 +187,7 @@ def parse_args():
 
     parser.add_argument('files', nargs='+', help="NetCDF4 files to resample.")
     parser.add_argument('--steering', required=True, help="CSV file with steering information")
-    parser.add_argument('--ranges',
+    parser.add_argument('--conditions',
                         help="TOML file with lower and upper percentile bounds for all scenarios, "
                         "for future and control periods.")
 

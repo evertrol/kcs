@@ -766,7 +766,9 @@ summer.
 The resulting number of valid combinations is about 50, which are
 passed on to stage 3.
 
-All the percentile ranges are configurable for each scenario. The input is supplied through a configuration file in the TOML format, and looks similar to this::
+All the percentile ranges are configurable for each scenario. The
+input is supplied through a configuration file in the TOML format, and
+looks similar to this::
 
     [[W.H.2085]]
     var = "pr"
@@ -860,8 +862,9 @@ The actual command is:
 .. code-block:: bash
 
     python -m kcs.resample @ecearth-all-nlpoint.list --steering steering.csv \
-        --ranges ranges.toml --precip-scenario L 4 --precip-scenario H 8 --relative pr \
-        --penalties penalties.toml -v
+        --conditions step2_conditions.toml --penalties penalties.toml \
+		--precip-scenario L 4 --precip-scenario H 8 --relative pr
+
 
 Points to notice:
 
@@ -881,8 +884,7 @@ Points to notice:
 
   That is, it is a nested @-list.
 
-* The list of files (in this case an @-list), the ``--steering``,
-  ``--ranges`` and ``--penalties`` options are required. And you'll
+* The list of files (in this case an @-list), is required. And you'll
   need to specify at least one ``--precip-scenario``. The last option
   takes two arguments: a name, and a value, indicating the percentage
   change in precipitation per degree temperature change, as before.

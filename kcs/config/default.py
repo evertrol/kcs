@@ -297,7 +297,7 @@ nsample = 10_000
 nproc = 1
 
 # TOML file that defines the percentiles ranges used in step 2
-step2table = "step2.toml"
+step2_conditions = "step2.toml"
 
 
 # Penalties for number of (multiple) occurrences of segment in resamples, in step 3.

@@ -1,4 +1,3 @@
-
 [resampling]
 
 nsections = 6
@@ -7,8 +6,13 @@ nstep3 = 8
 # Monte-Carlo number of samples
 nsample = 10_000
 
+# Number of simultaneous processes for the calculations of step 1.
+# Note that for relatively few input runs (< 12), the overhead
+# generally costs more than multiprocessing wins.
+nproc = 1
+
 # TOML file that defines the percentiles ranges used in step 2
-step2table = "step2.toml"
+step2_conditions = "step2.toml"
 
 
 # Penalties for number of (multiple) occurrences of segment in resamples, in step 3.
