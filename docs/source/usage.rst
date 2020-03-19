@@ -132,6 +132,9 @@ this is interpreted as:
         tas_Amon_GISS-E2-R_rcp85_r1i1p1_225101-227512.nc \
         tas_Amon_GISS-E2-R_rcp85_r1i1p1_227601-230012.nc
 
+NB: ``kcs.read_files`` is a fictional module, so the above example
+will yield an error.
+
 Lines in an @-list can be commented-out using a ``#`` at the start of
 a line (but trailing comments at the end of a line are not allowed;
 these are interpreted as part of the file name).
@@ -617,6 +620,8 @@ Calculating and overplotting the model of interest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The same calculation can be applied for the model of interest. In the example case, the data were already matched and concatenated between historical and future experiments; this is why there is a ``--no-matching`` option given.
+
+.. code-block:: bash
 
     python -m kcs.change_perc @ecearth-pr-nlpoint-averaged.list --season jja \
         --period 2049 2078 --relative --run-changes pr_change_2050W_jja_nlpoint_ecearth.csv \
