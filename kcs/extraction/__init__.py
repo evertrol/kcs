@@ -21,12 +21,13 @@ import multiprocessing
 import warnings
 import logging
 import iris
-from kcs.types import Data
 from ..utils.io import load_cube
 from ..utils.coord import fixcoords, extract_areas
-from kcs.utils.date import months_coord_to_days_coord
+from ..utils.date import months_coord_to_days_coord
 from ..config import default_config
 
+
+Data = namedtuple('Data', ['path', 'realization', 'area', 'cube'])
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
