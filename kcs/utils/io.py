@@ -6,7 +6,10 @@ import iris.cube
 import iris.coord_categorisation
 import iris.analysis
 import iris.util
-import iris.experimental.equalise_cubes
+try:
+    from iris.util import equalise_attributes
+except ImportError:   # Iris 2
+    from iris.experimental.equalise_cubes import equalise_attributes
 import iris.exceptions
 from .date import make_year_constraint_all_calendars
 from .constraints import CoordConstraint

@@ -18,7 +18,10 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import iris
-from iris.experimental.equalise_cubes import equalise_attributes
+try:
+    from iris.util import equalise_attributes
+except ImportError:   # Iris 2
+    from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
 from ..utils.attributes import get as get_attrs
 from ..utils.constraints import EqualConstraint, RangeConstraint
