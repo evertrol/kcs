@@ -66,6 +66,7 @@ try:
     from iris.util import equalise_attributes
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
+from ..config import default_config
 from ..utils.argparse import parser as kcs_parser
 from ..utils.logging import setup as setup_logging
 from ..utils.attributes import get as get_attrs

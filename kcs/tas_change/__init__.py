@@ -16,6 +16,7 @@ import iris.coord_categorisation
 import iris.exceptions
 import numpy as np
 import pandas as pd
+from ..config import default_config
 from ..utils.date import make_year_constraint_all_calendars
 from ..utils.constraints import EqualConstraint
 
