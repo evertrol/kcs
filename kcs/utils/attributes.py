@@ -21,7 +21,7 @@ info_from: [attributes, filename]
 import logging
 import re
 import pandas as pd
-from kcs.config import default_config
+from ..config import default_config
 
 
 ATTRIBUTES_DEFAULT = {

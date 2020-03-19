@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def calc_percentiles(dataset, period, relative=False, reference_period=None):
     """DUMMY DOCSTRING"""
+
     logger.info("Calculating percentiles")
     if reference_period is None:
         reference_period = default_config['data']['cmip']['control_period']

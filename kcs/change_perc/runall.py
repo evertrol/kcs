@@ -278,6 +278,7 @@ def parse_args():
 
 def main():
     """DUMMY DOCSTRING"""
+
     args = parse_args()
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)

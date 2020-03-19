@@ -18,7 +18,7 @@ from .constraints import CoordConstraint
 logger = logging.getLogger(__name__)
 
 
-def load_cube(paths, variable_name=None): #, timespan, areas=None, average_area=True, targetgrid=None):
+def load_cube(paths, variable_name=None):
     """Read datasets from paths into Iris cubes.
 
     Combines cubes if there are more than one dataset in the same file.

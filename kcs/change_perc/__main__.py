@@ -35,7 +35,7 @@ from ..config import read_config, default_config
 from . import run
 
 
-logger = logging.getLogger('kcs.change_perc')
+logger = logging.getLogger('kcs.change_perc')  # pylint: disable=invalid-name
 
 
 def read_data(paths, attributes_from=('attributes', 'filename'),

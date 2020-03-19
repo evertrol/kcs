@@ -132,7 +132,7 @@ def calc(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
 
         CMIP percentile distribution. The index is years, the columns
         are 'mean' and percentiles of interest (e.g., 5, 10, 25, 50,
-        75, 90, 95). Calculated with `kcs.cmip.distribution.calc_percentiles`.
+        75, 90, 95). Calculated with `kcs.tas_change`.
 
     - scenarios: list of dicts
       The dict should contain a name, year and percentile, e.g.
