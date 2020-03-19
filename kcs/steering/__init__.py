@@ -20,9 +20,8 @@ import pandas as pd
 import iris
 from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
-import kcs.utils.logging
-import kcs.utils.attributes
-import kcs.utils.constraints
+from ..utils.attributes import get as get_attrs
+from ..utils.constraints import EqualConstraint, RangeConstraint
 
 
 REFERENCE_PERIOD = (1981, 2010)
@@ -36,7 +35,7 @@ def read_data(paths, info_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=info_from,
         attributes=attributes, filename_pattern=filename_pattern)
 
@@ -53,7 +52,7 @@ def num2date(coord, index=None):
 
 def extract_season(cubes, season):
     """DUMMY DOC-STRING"""
-    constraint = iris.Constraint(season=kcs.utils.constraints.EqualConstraint(season))
+    constraint = iris.Constraint(season=EqualConstraint(season))
     logger.info("Extracting season %s", season)
     for cube in cubes:
         if not cube.coords('season'):
@@ -100,7 +99,7 @@ def calc_reference_values(cubes, reference_period, normby='run'):
 
     """
 
-    constraint = iris.Constraint(year=kcs.utils.constraints.RangeConstraint(*reference_period))
+    constraint = iris.Constraint(year=RangeConstraint(*reference_period))
     values = []
     for cube in cubes:
         if not cube.coords('year'):

@@ -17,13 +17,12 @@ import logging
 import pathlib
 from itertools import chain
 import iris
-from kcs.config import default_config, read_config
-import kcs.utils.date
-import kcs.utils.logging
-import kcs.utils.argparse
-import kcs.utils.attributes
-import kcs.utils.matching
-from kcs.utils.atlist import atlist
+from ..config import default_config, read_config
+from ..utils.logging import setup as setup_logging
+from ..utils.argparse import parser as kcs_parser
+from ..utils.attributes import get as get_attrs
+from ..utils.matching import match
+from ..utils.atlist import atlist
 from . import run
 
 
@@ -40,7 +39,7 @@ def read_data(paths, info_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=info_from,
         attributes=attributes, filename_pattern=filename_pattern)
 
@@ -49,7 +48,7 @@ def read_data(paths, info_from=('attributes', 'filename'),
 
 def parse_args():
     """DUMMY DOC-STRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('files', nargs='+', help="Input file paths")
     parser.add_argument('--outfile', required=True,
@@ -99,7 +98,7 @@ def parse_args():
     parser.add_argument('--average-experiments', action='store_true', help="Average ensemble "
                         "runs over their model-experiment, before calculating percentiles.")
     args = parser.parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    setup_logging(args.verbosity)
     read_config(args.config)
 
     args.paths = [pathlib.Path(filename) for filename in args.files]
@@ -125,7 +124,7 @@ def main():
 
     paths = list(chain.from_iterable(atlist(path) for path in args.paths))
     dataset = read_data(paths)
-    dataset = kcs.utils.matching.match(
+    dataset = match(
         dataset, match_by=args.match_by, on_no_match=args.on_no_match,
         historical_key=args.historical_key)
 

@@ -28,7 +28,7 @@ except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
 from ..utils.argparse import parser as kcs_parser
 from ..utils.logging import setup as setup_logging
-import kcs.utils.attributes
+from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
@@ -51,7 +51,7 @@ def read_data(paths, attributes_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=attributes_from,
         attributes=attributes, filename_pattern=filename_pattern)
 

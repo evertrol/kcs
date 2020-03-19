@@ -18,9 +18,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import iris
-from kcs.config import default_config, read_config
-import kcs.utils.logging
-import kcs.utils.argparse
+from ..config import default_config, read_config
+from ..utils.logging import setup as setup_logging
+from ..utils.argparse import parser as kcs_parser
 from ..tas_change.plot import plot as cmipplot
 from ..tas_change.plot import finish as plot_finish
 from ..utils.atlist import atlist
@@ -99,7 +99,7 @@ def run(percentiles, steering_table, outfile, reference_epoch=None,
 
 def parse_args():
     """Parse the command line arguments"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('percentiles', help="Input CSV file with CMIP distribution percentiles")
     parser.add_argument('steering_table', help="Input steering table CSV file")
@@ -126,8 +126,11 @@ def parse_args():
     parser.add_argument('--grid', action='store_true')
     parser.add_argument('--extra-label', help="Label to indicate the extra model data.")
     parser.add_argument('--smooth', type=int, nargs='?', const=10)
+
     args = parser.parse_args()
     read_config(args.config)
+    setup_logging(args.verbosity)
+
     if args.extra_data:
         args.extra_data = map(pathlib.Path, args.extra_data)
     if not args.reference_period:
@@ -138,7 +141,6 @@ def parse_args():
 def main():
     """Starting point when running as a script/module"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

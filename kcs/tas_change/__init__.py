@@ -16,11 +16,8 @@ import iris.coord_categorisation
 import iris.exceptions
 import numpy as np
 import pandas as pd
-import kcs.utils.date
-import kcs.utils.constraints
-import kcs.utils.attributes
-import kcs.utils.matching
-from kcs.utils.atlist import atlist
+from ..utils.date import make_year_constraint_all_calendars
+from ..utils.constraints import EqualConstraint
 
 
 HISTORICAL_KEY = 'historical'
@@ -36,7 +33,7 @@ def extract_season(cubes, season):
     """DUMMY DOC-STRING"""
     # Use a class instead of a lambda function, so we can pass the
     # constraint to multiprocessing (which doesn't handle lambdas).
-    constraint = iris.Constraint(season=kcs.utils.constraints.EqualConstraint(season))
+    constraint = iris.Constraint(season=EqualConstraint(season))
     logger.info("Extracting season %s", season)
     for cube in cubes:
         if not cube.coords('season'):
@@ -92,7 +89,7 @@ class ModelReferencePointCalculation:
         else:
             # Twelve months a year
             self.mindata = {key: 12*value for key, value in MINDATA.items()}
-        self.constraint = kcs.utils.date.make_year_constraint_all_calendars(*reference_period)
+        self.constraint = make_year_constraint_all_calendars(*reference_period)
 
     def __call__(self, model):
         """DUMMY DOC-STRING"""
@@ -275,7 +272,7 @@ def normalize(dataset, relative=False, normby='run'):
 def calc_percentile_year(dataset, year, average_experiments=False):
     """Calculate the percentile distribution of the cubes for a given year"""
 
-    constraint = iris.Constraint(year=kcs.utils.constraints.EqualConstraint(year))
+    constraint = iris.Constraint(year=EqualConstraint(year))
 
     #for cube in dataset['cube']:
     #    if not cube.coords('year'):

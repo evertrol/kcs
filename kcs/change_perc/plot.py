@@ -24,8 +24,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # from matplotlib.lines import Line2D
 # from matplotlib.patches import Patch
-import kcs.utils.logging
-import kcs.utils.argparse
+from ..utils.logging import setup as setup_logging
+from ..utils.argparse import parser as kcs_parser
 from ..config import read_config
 
 
@@ -171,7 +171,7 @@ def run(data, labels, limits, columns, xlabels, scenarios=None, only_scenario_me
 
 def parse_args():
     """DUMMY DOCSTRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('csvfile', help="Input CSV file with percentile change distribution.")
     parser.add_argument('output', help="Output figure file. The extension automatically "
@@ -199,7 +199,7 @@ def parse_args():
                         "as --columns.")
 
     args = parser.parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    setup_logging(args.verbosity)
     read_config(args.config)
 
     if len(args.columns) != len(args.xlabels):

@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import cftime
-import kcs.utils.logging
-import kcs.utils.argparse
+from ..utils.logging import setup as setup_logging
+from ..utils.argparse import parser as kcs_parser
 from ..config import read_config
 
 
@@ -134,7 +134,7 @@ def run(percentiles, outfile, dataset=None, xlabel=None, ylabel=None,
 
 def parse_args():
     """DUMMY DOCSTRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('infile', help="Input CSV file with distribution percentiles")
     parser.add_argument('outfile', help="Output figure filename. The extension determines "
@@ -149,7 +149,7 @@ def parse_args():
     parser.add_argument('--smooth', type=int, nargs='?', const=10)
 
     args = parser.parse_args()
-    kcs.utils.logging.setup(args.verbosity)
+    setup_logging(args.verbosity)
     read_config(args.config)
 
     return args

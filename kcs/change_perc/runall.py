@@ -66,13 +66,13 @@ try:
     from iris.util import equalise_attributes
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
-import kcs.utils.argparse
-import kcs.utils.logging
-import kcs.utils.attributes
-import kcs.utils.matching
-from kcs.utils.atlist import atlist
+from ..utils.argparse import parser as kcs_parser
+from ..utils.logging import setup as setup_logging
+from ..utils.attributes import get as get_attrs
+from ..utils.matching import match
+from ..utils.atlist import atlist
 from . import run as calculate
-from .plot import run as plot
+from . import plot
 
 
 HISTORICAL_KEY = 'historical'
@@ -99,7 +99,7 @@ def read_data(paths, attributes_from=('attributes', 'filename'),
     cubes = [iris.load_cube(str(path)) for path in paths]
 
     # Get the attributes, and create a dataframe with cubes & attributes
-    dataset = kcs.utils.attributes.get(
+    dataset = get_attrs(
         cubes, paths, info_from=attributes_from,
         attributes=attributes, filename_pattern=filename_pattern)
 
@@ -202,7 +202,7 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
                 columns = ['mean', '5', '10', '50', '90', '95']
                 xlabels = ['ave', 'P05', 'P10', 'P50', 'P90', 'P95']
                 logger.info("Creating plot for variable %s, season %s, epoch %s")
-                plot(perc_distr, labels, limits=None, columns=columns, xlabels=xlabels,
+                plot.run(perc_distr, labels, limits=None, columns=columns, xlabels=xlabels,
                      scenarios=scenarios)
                 plt.tight_layout()
                 filename = f"{var}_{epoch}_{season}.{plottype.lower()}"
@@ -258,6 +258,9 @@ def parse_args():
                         "to indicate a historical run.")
 
     args = parser.parse_args()
+    setup_logging(args.verbosity)
+    read_config(args.config)
+
     args.paths = [pathlib.Path(filename) for filename in args.files]
     args.runs = [pathlib.Path(filename) for filename in args.runs]
 
@@ -267,7 +270,6 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
@@ -278,7 +280,7 @@ def main():
     dslist = []
     for _, group in dataset.groupby('var'):
         tmpds = group.copy()
-        tmpds = kcs.utils.matching.match(
+        tmpds = match(
             tmpds, match_by=args.match_by, on_no_match=args.on_no_match,
             historical_key=args.historical_key)
         tmpds = concat_cubes(tmpds, historical_key=args.historical_key)
@@ -292,7 +294,7 @@ def main():
         dslist = []
         for _, group in runs.groupby('var'):
             tmpds = group.copy()
-            tmpds = kcs.utils.matching.match(
+            tmpds = match(
                 tmpds, match_by=args.match_by, on_no_match=args.on_no_match,
                 historical_key=args.historical_key)
             tmpds = concat_cubes(tmpds, historical_key=args.historical_key)
