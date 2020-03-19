@@ -30,7 +30,7 @@ MINDATA = {'historical': 20, 'future': 4}
 PERC_PERIOD = (1950, 2100)
 
 
-logger = logging.getLogger('kcs.tas_change')  # pylint: disable=invalid-name
+logger = logging.getLogger('tas-change')  # pylint: disable=invalid-name
 
 
 def read_data(paths, info_from=('attributes', 'filename'),

@@ -85,7 +85,7 @@ YTITLE = {
     'tas': r"Change (${}^{\circ}$C)",
 }
 
-logger = logging.getLogger('kcs.change_perc.runall')  # pylint: disable=invalid-name
+logger = logging.getLogger('runall')  # pylint: disable=invalid-name
 
 
 def read_data(paths, attributes_from=('attributes', 'filename'),

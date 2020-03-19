@@ -35,7 +35,7 @@ from ..utils.attributes import get as get_attrs
 from . import run
 
 
-logger = logging.getLogger('kcs.steering')  # pylint: disable=invalid-name
+logger = logging.getLogger('steering')  # pylint: disable=invalid-name
 
 
 def read_data(paths, info_from=('attributes', 'filename'),

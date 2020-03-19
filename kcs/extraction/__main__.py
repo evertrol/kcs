@@ -23,7 +23,7 @@ from ..utils.atlist import atlist
 from ..config import read_config, default_config
 
 
-logger = logging.getLogger('kcs.extraction')  # pylint: disable=invalid-name
+logger = logging.getLogger('extraction')  # pylint: disable=invalid-name
 
 
 def parse_args():

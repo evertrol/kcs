@@ -22,7 +22,7 @@ from ..config import read_config
 
 
 # If we run as a runnable module, use a more appropriate logger name
-logname = 'kcs.distribution' if __name__ == '__main__' else __name__
+logname = 'tas-change-plot' if __name__ == '__main__' else __name__
 logger = logging.getLogger(logname)
 
 

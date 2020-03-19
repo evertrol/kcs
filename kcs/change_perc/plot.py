@@ -39,7 +39,7 @@ PERC_RANGES = [(10, 90), (25, 75)]
 
 
 # pylint: disable=invalid-name
-logname = 'kcs.change_perc.plot' if __name__ == '__main__' else __name__
+logname = 'change-perc-plot' if __name__ == '__main__' else __name__
 logger = logging.getLogger(logname)   # pylint: disable=invalid-name
 
 

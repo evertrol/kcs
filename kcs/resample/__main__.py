@@ -42,7 +42,7 @@ from . import run
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 
 
-logger = logging.getLogger('kcs.resample')   # pylint: disable=invalid-name
+logger = logging.getLogger('resample')   # pylint: disable=invalid-name
 
 
 def read_data(paths, attributes_from=('attributes', 'filename'),
