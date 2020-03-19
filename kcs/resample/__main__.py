@@ -247,12 +247,12 @@ def parse_args():
     for label, perc in args.precip_scenario:
         args.pr_scenarios[label] = float(perc)
 
-    if args.ranges:
-        filename = args.ranges
+    if args.conditions:
+        filename = args.conditions
     else:
         filename = default_config['resampling']['step2_conditions']
-        with open(filename) as fh:  # pylint: disable=invalid-name
-            args.ranges = toml.load(fh)
+    with open(filename) as fh:  # pylint: disable=invalid-name
+        args.conditions = toml.load(fh)
 
     if args.penalties:
         with open(args.penalties) as fh:  # pylint: disable=invalid-name
@@ -281,7 +281,7 @@ def main():
 
     steering_table = read_steering_target(args.steering, args.pr_scenarios, args.scenario)
 
-    indices, diffs = run(dataset, steering_table, args.ranges, args.penalties,
+    indices, diffs = run(dataset, steering_table, args.conditions, args.penalties,
                          args.nstep1, args.nstep3, args.nsample, args.nsections,
                          args.reference_period, relative=args.relative, nproc=args.nproc)
 
