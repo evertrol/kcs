@@ -6,6 +6,8 @@ Run the steps to resample global models to be applied as input boundaries for a 
 
 See [the usage guide](https://github.com/eucp-project/kcs/blob/master/docs/source/usage.rst) for an introduction.
 
+See the [installation document](https://github.com/eucp-project/kcs/blob/master/INSTALL) to install the software.
+
 
 Copyright
 ---------

@@ -18,21 +18,50 @@ https://docs.conda.io/en/latest/miniconda.html (pick the Python 3
 version) and install that. With Miniconda installed, and the `conda`
 command available, you can run:
 
-    conda install --name kcs --channel conda-forge iris h5py toml
-	conda activate kcs
+        conda create --name kcs --channel conda-forge iris h5py toml pandas python=3.7
+	    conda activate kcs
 
 (or pick your favourite environment name.)
 
-kcs itself is not available through Conda. Instead, just install it
-using `pip` in the Conda environment:
+At the moment (March 2020), kcs is not directly installable through
+pip: it is not on the Python Package Index, and its dependencies are
+waiting until Iris 3.0 is out.
 
-    pip install kcs
+Instead, clone the repository, or download the zip file from the
+GitHub repository at https://github.com/eucp-project/kcs .
 
-But if you want the most recent version (possibly with bug-fixes),
-install it directly from its source repository:
+Once unpacked and inside the `kcs` directory, you can run the various
+commands or import the Python modules directly.
 
-    pip install git+https://github.com/evertrol/kcs.git
+The above method of "installation" makes it hard to run `kcs` in
+another directory, since it can't find the package; not unless the
+base `kcs` directory is added to the `PYTHONPATH` environment
+variable.
 
-You may need to add `--upgrade`, `--force-reinstall` and `--no-deps`
-to force an upgrade, especially if the change in the repository was
-minor and the package version was not upgraded.
+There is a possibility to install `kcs`, either after
+downloading/cloning or directly from its repository, by ignoring its
+dependencies. This assumes a proper environment with the required
+dependencies already exists (as above in setting up the Conda
+environment).
+
+To do this, run `pip` as follows from the base `kcs` directory:
+
+        pip install . --upgrade --force-reinstall --no-deps
+
+This will also upgrade `kcs`, in case of bug-fxes etc. The `--no-deps`
+will prevent `pip` from trying to install the dependencies, since the
+current list of dependencies conflict with each other (see
+`pyproject.toml` for the dependency versions).
+
+If you want to install it from its repository, use:
+
+        pip install git+https://github.com/eucp-project/kcs.git \
+		    --upgrade --force-reinstall --no-deps
+
+
+While it is entirely possible to downgrade the required dependencies
+in `pyproject.toml`, it is felt that the installation of outdated
+versions should not be attempted, and instead wait for Iris 3.0. Note,
+for example, that Matplotlib 2, a required Iris 2 dependency, can't be
+installed with Python 3.8 (hence the Conda setup above uses Python
+3.7).
