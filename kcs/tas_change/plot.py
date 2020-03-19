@@ -18,6 +18,7 @@ import pandas as pd
 import cftime
 import kcs.utils.logging
 import kcs.utils.argparse
+from ..config import read_config
 
 
 # If we run as a runnable module, use a more appropriate logger name
@@ -146,14 +147,17 @@ def parse_args():
     parser.add_argument('--legend', action='store_true')
     parser.add_argument('--grid', action='store_true')
     parser.add_argument('--smooth', type=int, nargs='?', const=10)
+
     args = parser.parse_args()
+    kcs.utils.logging.setup(args.verbosity)
+    read_config(args.config)
+
     return args
 
 
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

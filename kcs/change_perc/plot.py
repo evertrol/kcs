@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 # from matplotlib.patches import Patch
 import kcs.utils.logging
 import kcs.utils.argparse
+from ..config import read_config
 
 
 COLORS = {'G': '#AAEE88', 'W': '#225511',
@@ -198,6 +199,9 @@ def parse_args():
                         "as --columns.")
 
     args = parser.parse_args()
+    kcs.utils.logging.setup(args.verbosity)
+    read_config(args.config)
+
     if len(args.columns) != len(args.xlabels):
         raise ValueError("'--columns' and '--xlabels' don't have the same number of values")
 
@@ -207,7 +211,6 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

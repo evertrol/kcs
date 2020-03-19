@@ -99,6 +99,7 @@ def parse_args():
     parser.add_argument('--average-experiments', action='store_true', help="Average ensemble "
                         "runs over their model-experiment, before calculating percentiles.")
     args = parser.parse_args()
+    kcs.utils.logging.setup(args.verbosity)
     read_config(args.config)
 
     args.paths = [pathlib.Path(filename) for filename in args.files]
@@ -119,9 +120,9 @@ def parse_args():
 def main():
     """DUMMY DOC-STRING"""
     args = parse_args()
-    kcs.utils.logging.setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
+
     paths = list(chain.from_iterable(atlist(path) for path in args.paths))
     dataset = read_data(paths)
     dataset = kcs.utils.matching.match(

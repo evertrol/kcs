@@ -17,7 +17,7 @@ import argparse
 import itertools
 import logging
 from . import run
-from ..utils.logging import setup as log_setup
+from ..utils.logging import setup as setup_logging
 from ..utils.argparse import parser as kcs_parser
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
@@ -60,8 +60,11 @@ def parse_args():
     parser.add_argument('--tempdir')
     parser.add_argument('--subdir-per-realization', action='store_true')
     parser.add_argument('--ignore-common-warnings', action='store_true')
+
     args = parser.parse_args()
+    setup_logging(args.verbosity)
     read_config(args.config)
+
     if args.template is None:
         args.template = default_config['data']['extraction']['template']
     args.save_result = not args.no_save_results
@@ -73,9 +76,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
+
     files = list(itertools.chain.from_iterable(atlist(fname) for fname in args.files))
     run(files, args.area, regrid=args.regrid,
                        save_result=args.save_result, average_area=args.average_area,

@@ -29,7 +29,7 @@ import pandas as pd
 import iris
 from ..config import read_config, default_config
 from ..utils.argparse import parser as kcs_parser
-from ..utils.logging import setup as log_setup
+from ..utils.logging import setup as setup_logging
 from ..utils.atlist import atlist
 from ..utils.attributes import get as get_attrs
 from . import run
@@ -81,7 +81,9 @@ def parse_args():
                         "up to and including Dec 31 of 'end').")
 
     args = parser.parse_args()
+    setup_logging(args.verbosity)
     read_config(args.config)
+
     if not args.reference_period:
         args.reference_period = default_config['data']['extra']['control_period']
     args.paths = [pathlib.Path(filename) for filename in args.files]
@@ -96,7 +98,6 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

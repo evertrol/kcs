@@ -27,7 +27,7 @@ try:
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
 from ..utils.argparse import parser as kcs_parser
-from ..utils.logging import setup as log_setup
+from ..utils.logging import setup as setup_logging
 import kcs.utils.attributes
 from ..utils.matching import match
 from ..utils.atlist import atlist
@@ -161,7 +161,9 @@ def parse_args():
                         "to indicate a historical run.")
 
     args = parser.parse_args()
+    setup_logging(args.verbosity)
     read_config(args.config)
+
     if args.reference_period is None:
         args.reference_period = default_config['data']['cmip']['control_period']
     args.paths = [pathlib.Path(filename) for filename in args.files]
@@ -172,7 +174,6 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    log_setup(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 

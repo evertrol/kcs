@@ -225,9 +225,10 @@ def parse_args():
     parser.add_argument('-N', '--nproc', type=int, help="Number of simultaneous processes.")
 
     args = parser.parse_args()
-
+    setup_logging(args.verbosity)
     # Read and set defaults
     read_config(args.config)
+
     if args.reference_period is None:
         args.reference_period = default_config['data']['extra']['control_period']
     if args.nproc is None:
@@ -262,7 +263,6 @@ def parse_args():
 def main():
     """DUMMY DOCSTRING"""
     args = parse_args()
-    setup_logging(args.verbosity)
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
