@@ -216,7 +216,7 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
 
 def parse_args():
     """DUMMY DOCSTRING"""
-    parser = argparse.ArgumentParser(parents=[kcs.utils.argparse.parser],
+    parser = argparse.ArgumentParser(parents=[kcs_parser],
                                      conflict_handler='resolve')
     parser.add_argument('files', nargs='+', help="Input data. This should be area-averaged data, "
                         "and already be filtered on relevant area. Variables are determined from "
