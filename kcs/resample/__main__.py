@@ -247,9 +247,20 @@ def parse_args():
     for label, perc in args.precip_scenario:
         args.pr_scenarios[label] = float(perc)
 
-    with open(args.penalties) as fh:  # pylint: disable=invalid-name
-        penalties = toml.load(fh)
-    penalties = {int(key): value for key, value in penalties['penalties'].items()}
+    if args.ranges:
+        filename = args.ranges
+    else:
+        filename = default_config['resampling']['step2_conditions']
+        with open(filename) as fh:  # pylint: disable=invalid-name
+            args.ranges = toml.load(fh)
+
+    if args.penalties:
+        with open(args.penalties) as fh:  # pylint: disable=invalid-name
+            penalties = toml.load(fh)
+            penalties = penalties['penalties']
+    else:
+        penalties = default_config['resampling']['penalties']
+    penalties = {int(key): value for key, value in penalties.items()}
     # Fill up the penalty dict
     for i in range(max(penalties.keys())+1, args.nstep3+1):
         penalties[i] = math.inf
@@ -270,10 +281,7 @@ def main():
 
     steering_table = read_steering_target(args.steering, args.pr_scenarios, args.scenario)
 
-    with open(args.ranges) as fh:  # pylint: disable=invalid-name
-        ranges = toml.load(fh)
-
-    indices, diffs = run(dataset, steering_table, ranges, args.penalties,
+    indices, diffs = run(dataset, steering_table, args.ranges, args.penalties,
                          args.nstep1, args.nstep3, args.nsample, args.nsections,
                          args.reference_period, relative=args.relative, nproc=args.nproc)
 
