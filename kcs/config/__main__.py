@@ -14,6 +14,8 @@ def main():
         if line == f"[{section}]":
             found = True
         elif line.startswith('[') and not line.startswith(f"[{section}"):  # new section
+            if found:
+                break
             found = False
         if found:
             print(line)
