@@ -406,8 +406,8 @@ command:
 .. code-block:: bash
 
     python -m kcs.tas_change.plot  tas_change_cmip.csv cmip.png \
-        --xrange 1950 2100 --ylabel 'Temperature change [${}^{\circ}$]' \
-        --title 'Global year temperature change'  --smooth 7 --yrange -1 6 \
+        --xrange 1950 2100 --ylabel 'Temperature change [${}^{\circ}$C]' \
+        --title 'Global annual temperature change'  --smooth 7 --yrange -1 6 \
 		--grid --legend
 
 The module has two required arguments: the CSV file calculated above,

@@ -3,8 +3,8 @@
 Usage example:
 
 $ python -m kcs.tas_change.plot  distribution-percentiles.csv cmip6.png \
-    --xrange 1950 2100    --ylabel 'Temperature change [${}^{\circ}$]' \
-    --title 'Global year temperature change'  --smooth 7 --yrange -1 6
+    --xrange 1950 2100    --ylabel 'Temperature change [${}^{\circ}$C]' \
+    --title 'Global annual temperature change'  --smooth 7 --yrange -1 6
 
 """
 

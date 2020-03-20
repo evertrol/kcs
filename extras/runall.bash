@@ -66,7 +66,7 @@ python  -m kcs.steering  tas_change_cmip6.csv  @ecearth-tas-global-averaged.list
 python -m kcs.steering.plot tas_change_cmip6.csv steering.csv \
         --outfile cmip6-ecearth-scenarios.png \
 		--extra-data @ecearth-tas-global-averaged.list --reference-epoch 2005 \
-		--ylabel 'Temperature increase [${}^{\circ}$]'  --smooth 10 \
+		--ylabel 'Temperature increase [${}^{\circ}C$]'  --smooth 10 \
         --grid --legend
 
 
