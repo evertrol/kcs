@@ -74,7 +74,7 @@ global = "global"
 nlpoint = {lat = 51.25, lon = 6.25}
 nlbox = {w = 4.5, e = 8.0, s = 50.5, n = 53.0}
 weurbox = {w = 4.0, e = 14.0, s= 47.0, n = 53.0}
-rhinebasin = {w = 6, e = 9, n = 52, s = 47}
+rhinebasin = {w = 6.0, e = 9.0, n = 52.0, s = 47.0}
 
 [variables]
 # Some generic configuration regarding variables
