@@ -1,3 +1,5 @@
+.. _usage-guide:
+
 ==========================
 A brief usage guide to kcs
 ==========================
