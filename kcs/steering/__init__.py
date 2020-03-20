@@ -207,7 +207,7 @@ def normalize_average_dataset(cubes, season=None, average_years=True, relative=F
         reference_period = default_config['data']['extra']['control_period']
 
     if season:
-        cubes = extract_season(dataset, season)
+        cubes = extract_season(cubes, season)
     if average_years:
         cubes = average_year(cubes, season=season)
     refvalues = calc_reference_values(

@@ -94,9 +94,9 @@ def extract_areas(cube, var, areas=None, targetgrid=None, average_area=True, gri
             scheme = iris.analysis.Linear()
         else:
             scheme = iris.analysis.Linear()
-        gridcube = timecube.regrid(targetgrid, scheme)
+        gridcube = cube.regrid(targetgrid, scheme)
     else:
-        gridcube = timecube
+        gridcube = cube
 
     results = []
     for area in areas:

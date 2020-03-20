@@ -109,7 +109,7 @@ def parse_area(area):
         raise ValueError("latitude area definition is the wrong format")
     lon_constraint = CoordConstraint(area['longitude'][0], area['longitude'][1])
     lat_constraint = CoordConstraint(area['latitude'][0], area['latitude'][1])
-    constraint = iris.Constraint(longitude=long_constraint, latitude=lat_constraint)
+    constraint = iris.Constraint(longitude=lon_constraint, latitude=lat_constraint)
     return constraint, None
 
 

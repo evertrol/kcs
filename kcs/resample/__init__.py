@@ -164,7 +164,7 @@ def calculate_s1(means, indices, target, var='pr', season='djf', nproc=None):
     """Calculate the subset S1: winter precipitation change equals `target`"""
 
     if not nproc:
-        nsections = default_config['resampling']['nproc']
+        nproc = default_config['resampling']['nproc']
 
     # Calculate the procentual change in winter precipitation for all sections individually,
     # With respect to an overall-averaged control period
@@ -306,7 +306,7 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     if not nsample:
         nsample = default_config['resampling']['nsample']
     if not nproc:
-        nsections = default_config['resampling']['nproc']
+        nproc = default_config['resampling']['nproc']
 
     indices = calculate_s1(means, indices, precip_change, nproc=nproc)
     indices['control'] = indices['control'][:nstep1]
@@ -374,7 +374,7 @@ def run(dataset, steering_table, ranges, penalties,
     if not nsections:
         nsections = default_config['resampling']['nsections']
     if not nproc:
-        nsections = default_config['resampling']['nproc']
+        nproc = default_config['resampling']['nproc']
 
     data = {}
     indices = {}
