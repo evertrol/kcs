@@ -23,6 +23,7 @@ try:
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
 import cftime
+from ..config import default_config
 from ..utils.constraints import EqualConstraint, RangeConstraint
 
 
