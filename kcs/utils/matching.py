@@ -1,27 +1,26 @@
 """
-# Match experiment by ensemble ID
-# Matches historical and future experiments
+Match experiment by ensemble ID
+Matches historical and future experiments
 match_experiments:
-#%#
-# What attribute(s) to match the historical and future experiments by
-# Valid values: 'model', 'ensemble'
-# The default is by 'ensemble'
+
+What attribute(s) to match the historical and future experiments by
+Valid values: 'model', 'ensemble'
+The default is by 'ensemble'
 match_by: 'ensemble'
 
-#%#
-# What to do with future scenarions that don't have a
-# matching historical run?
-# Valid values: 'remove', 'random', 'randomrun', 'exception'
-# - 'remove': if historical data is missing, remove the
-# future experiment.
-# - 'random': pick an entirely random historical run from the model
-# - 'randomrun': keep i # & p the same, find a random
-#   historical run with a (different) r. If there's still no
-#   match to be found, an exception is raised.
-# - 'error' the script raises an exception if no matching
-#   historical run is found.
-# The default is 'error': to raise an exception
-# fix_nonmatching_historical: randomrun
+What to do with future scenarions that don't have a
+matching historical run?
+Valid values: 'remove', 'random', 'randomrun', 'exception'
+- 'remove': if historical data is missing, remove the
+future experiment.
+- 'random': pick an entirely random historical run from the model
+- 'randomrun': keep i & p the same, find a random
+  historical run with a (different) r. If there's still no
+  match to be found, an exception is raised.
+- 'error' the script raises an exception if no matching
+  historical run is found.
+The default is 'error': to raise an exception
+fix_nonmatching_historical: randomrun
 """
 
 import logging
@@ -102,7 +101,7 @@ def match(dataset, match_by='ensemble', on_no_match='error', historical_key='his
                        (group['realization'] == realization) &
                        (group['initialization'] == initialization) &
                        (group['physics'] == physics))
-            else: # matching by model: any historical run will do
+            else:  # matching by model: any historical run will do
                 sel = hist_sel
             if not any(sel):
                 if on_no_match == 'error':
@@ -112,6 +111,7 @@ def match(dataset, match_by='ensemble', on_no_match='error', historical_key='his
                     raise ValueError(msg)
                 logger.warning("no matching historical run found for %s - %s - %s",
                                model, experiment, ensemble)
+                # pylint: disable=consider-using-in
                 if on_no_match == 'remove' or on_no_match == 'ignore':
                     continue
                 if on_no_match == 'randomrun' and match_by == 'ensemble':

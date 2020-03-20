@@ -1,4 +1,4 @@
-"""
+r"""
 
 Usage example:
 
@@ -22,8 +22,8 @@ from ..config import read_config
 
 
 # If we run as a runnable module, use a more appropriate logger name
-logname = 'tas-change-plot' if __name__ == '__main__' else __name__
-logger = logging.getLogger(logname)
+logname = 'tas-change-plot' if __name__ == '__main__' else __name__  # pylint: disable=invalid-name
+logger = logging.getLogger(logname)  # pylint: disable=invalid-name
 
 
 def num2date(coord, index=None):
@@ -34,8 +34,7 @@ def num2date(coord, index=None):
                            coord.units.calendar)
 
 
-def plot(figure, percs, dataset=None, xlabel=None, ylabel=None,
-         legend=False, title=None, xrange=None, yrange=None):
+def plot(figure, percs, dataset=None, legend=False, xrange=None, yrange=None):
     """Plot the percentile distribution as function of time
 
     Parameters
@@ -80,7 +79,6 @@ def plot(figure, percs, dataset=None, xlabel=None, ylabel=None,
         axes = plt.gca()
         axes.yaxis.set_ticks_position('both')
 
-
     if legend:
         plt.legend()
     if xrange is None:
@@ -117,14 +115,15 @@ def finish(xlabel=None, ylabel=None, title=None, legend=True, grid=True):
         plt.legend()
 
 
-def run(percentiles, outfile, dataset=None, xlabel=None, ylabel=None,
+def run(percentiles, outfile, xlabel=None, ylabel=None,
         xrange=None, yrange=None, title=None, grid=True, legend=True,
         smooth=None):
+    """DUMMY DOCSTRING"""
+
     figure = plt.figure(figsize=(12, 8))
     if smooth:
         percentiles = percentiles.rolling(window=smooth, center=True).mean()
-    plot(figure, percentiles, xlabel=xlabel, ylabel=ylabel,
-         xrange=xrange, yrange=yrange, title=title)
+    plot(figure, percentiles, xrange=xrange, yrange=yrange)
 
     finish(xlabel=xlabel, ylabel=ylabel, title=title, grid=grid, legend=legend)
 

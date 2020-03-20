@@ -33,7 +33,8 @@ def parse_args():
 
     class ListAreas(argparse.Action):
         """Helper class for argparse to list available areas and exit"""
-        def __call__(self, parser, namespace, values, option_string):
+
+        def __call__(self, parser, namespace, values, option_string=None):
             print("\n".join(areas))
             parser.exit()
 
@@ -75,17 +76,19 @@ def parse_args():
 
 
 def main():
+    """DUMMY DOCSTRING"""
+
     args = parse_args()
     logger.debug("%s", " ".join(sys.argv))
     logger.debug("Args: %s", args)
 
     files = list(itertools.chain.from_iterable(atlist(fname) for fname in args.files))
     run(files, args.area, regrid=args.regrid,
-                       save_result=args.save_result, average_area=args.average_area,
-                       nproc=args.nproc, template=args.template,
-                       tempdir=args.tempdir,
-                       subdir_per_realization=args.subdir_per_realization,
-                       ignore_common_warnings=args.ignore_common_warnings)
+        save_result=args.save_result, average_area=args.average_area,
+        nproc=args.nproc, template=args.template,
+        tempdir=args.tempdir,
+        subdir_per_realization=args.subdir_per_realization,
+        ignore_common_warnings=args.ignore_common_warnings)
     logger.debug("%s finished", sys.argv[0])
 
 

@@ -1,21 +1,21 @@
-"""
-#%#
-# Where to get the information for the matching from
-# Valid values: 'attributes', 'filename'.
-#%#
-# Use 'attributes' to match the datasets by information from
-# attributes, specifically 'realization', 'physics_version',
-# 'initaliazation_method', 'experiment', 'model_id', and
-# 'parent_experiment_rip'. For filename, relevant parts of
-# the filenames are used (using regular expressions for
-# e.g. the ensemble part of the filename). If information is
-# missing, an exception is raised.
-# Both options can be given in a list if the first option
-# fails, the next one is tried. If both fail, an exception
-# is raised.
-#%#
-# The default is [attributes, filename]: first by
-# attributes, and use the filename as a fallback.
+"""Obtain dataset attributes from the dataset or its filename
+
+Where to get the information for the matching from
+Valid values: 'attributes', 'filename'.
+
+Use 'attributes' to match the datasets by information from
+attributes, specifically 'realization', 'physics_version',
+'initaliazation_method', 'experiment', 'model_id', and
+'parent_experiment_rip'. For filename, relevant parts of
+the filenames are used (using regular expressions for
+e.g. the ensemble part of the filename). If information is
+missing, an exception is raised.
+Both options can be given in a list if the first option
+fails, the next one is tried. If both fail, an exception
+is raised.
+
+The default is [attributes, filename]: first by
+attributes, and use the filename as a fallback.
 info_from: [attributes, filename]
 """
 import logging

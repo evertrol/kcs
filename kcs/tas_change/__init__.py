@@ -3,7 +3,6 @@
 import logging
 import warnings
 import functools
-from itertools import chain
 from datetime import datetime
 import multiprocessing
 from pprint import pformat
@@ -25,7 +24,7 @@ MINDATA = {'historical': 20, 'future': 4}
 PERC_PERIOD = (1950, 2100)
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def extract_season(cubes, season):
@@ -126,8 +125,8 @@ class ModelReferencePointCalculation:
         ndata = {}
         mean = {}
         for key, values in avs.items():
-            n = len(values)
-            # Weighted time means for each section
+            n = len(values)  # pylint: disable=invalid-name
+            # Weighted time average for each section
             ndata[key] = sum(value[1] for value in values) / n
             mean[key] = sum(value[0].data for value in values) / n
         logger.debug("Reference data values: %s , with weights %s", pformat(mean), pformat(ndata))
@@ -250,7 +249,6 @@ def normalize(dataset, relative=False, normby='run'):
         sel = dataset['index_match_run'] > -1
         indices = dataset.loc[sel, 'index_match_run']
 
-        #match = dataset.loc[sel].index
         reference_values = dataset.loc[sel, 'reference_value']
         hist_data = dataset.loc[indices, :]
         hist_data['cube'] = hist_data['cube'].apply(lambda cube: cube.copy())
@@ -272,10 +270,6 @@ def calc_percentile_year(dataset, year, average_experiments=False):
     """Calculate the percentile distribution of the cubes for a given year"""
 
     constraint = iris.Constraint(year=EqualConstraint(year))
-
-    #for cube in dataset['cube']:
-    #    if not cube.coords('year'):
-    #        iris.coord_categorisation.add_year(cube, 'time')
 
     if average_experiments:
         data = []

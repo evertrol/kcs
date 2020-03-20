@@ -1,4 +1,4 @@
-"""Overplot extra model scenario matches on top of CMIP tas distribution
+r"""Overplot extra model scenario matches on top of CMIP tas distribution
 
 Usage example:
 
@@ -29,8 +29,8 @@ from . import normalize_average_dataset, num2date
 
 
 # If we run as a runnable module, use a more appropriate logger name
-logname = 'steering-plot' if __name__ == '__main__' else __name__
-logger = logging.getLogger(logname)
+logname = 'steering-plot' if __name__ == '__main__' else __name__  # pylint: disable=invalid-name
+logger = logging.getLogger(logname)  # pylint: disable=invalid-name
 
 
 def read_data(paths, info_from=('attributes', 'filename'),
@@ -46,7 +46,7 @@ def read_data(paths, info_from=('attributes', 'filename'),
     return dataset
 
 
-def plot_extra(cube, relative=False, smooth=None, years=None, label=''):
+def plot_extra(cube, smooth=None, years=None, label=''):
     """Plot the averaged extra dataset
 
     The input should be a single Iris cube.
@@ -80,7 +80,7 @@ def plot_scenarios(scenarios, reference_epoch=None):
 def run(percentiles, steering_table, outfile, reference_epoch=None,
         xlabel=None, ylabel=None, xrange=None, yrange=None, title=None,
         grid=True, legend=True, smooth=None,
-        extra_data=None, relative=False, extra_label=''):
+        extra_data=None, extra_label=''):
     """DUMMY DOCSTRING"""
 
     figure = plt.figure(figsize=(12, 8))
@@ -90,8 +90,7 @@ def run(percentiles, steering_table, outfile, reference_epoch=None,
 
     if extra_data:
         years = [dt.year for dt in percentiles.index]
-        plot_extra(extra_data, relative=relative, smooth=smooth, years=years,
-                   label=extra_label)
+        plot_extra(extra_data, smooth=smooth, years=years, label=extra_label)
 
     scenarios = steering_table.to_dict('records')
     # This assumes the percentiles in the scenarios are present (as
@@ -170,7 +169,7 @@ def main():
 
     run(percentiles, steering_table, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
         xrange=args.xrange, yrange=args.yrange, title=args.title, smooth=args.smooth,
-        extra_data=extra_data, relative=args.relative, extra_label=args.extra_label,
+        extra_data=extra_data, extra_label=args.extra_label,
         reference_epoch=args.reference_epoch, grid=args.grid, legend=args.legend)
     logger.info("Done processing")
 

@@ -1,20 +1,29 @@
-# pragma pylint: disable=line-too-long
 """Calculate and plot percentile distributions for all input data,
 scenarios from the steering table, for a given set of seasons and
 variables
 
 Example usage:
 
-$ python -m kcs.change_perc.runall @cmip-all-nlpoint-averaged.list --season djf jja  --steering steering.csv --runs @ecearth-all-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv
+$ python -m kcs.change_perc.runall @cmip-all-nlpoint-averaged.list --season djf jja  \
+    --steering steering.csv --runs @ecearth-all-nlpoint-averaged.list --relative pr \
+    --no-matching -v --plottype pdf --write-csv
 
 Note the above runs all single core. It is possible to speed things up
 by using e.g. four cores, by simply splitting the above up into four
 individual runs, separated by variable and season:
 
-$ python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list --season djf  --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
-$ python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list --season jja  --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
-$ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season djf  --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
-$ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season jja  --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr --no-matching -v --plottype pdf --write-csv  &
+$ python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list --season djf  \
+    --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list --relative pr \
+    --no-matching -v --plottype pdf --write-csv  &
+$ python -m kcs.change_perc.runall @cmip-tas-nlpoint-averaged.list --season jja  \
+    --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list --relative pr \
+    --no-matching -v --plottype pdf --write-csv  &
+$ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season djf  \
+    --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr \
+    --no-matching -v --plottype pdf --write-csv  &
+$ python -m kcs.change_perc.runall @cmip-pr-nlpoint-averaged.list --season jja  \
+    --steering steering.csv --runs @ecearth-pr-nlpoint-averaged.list --relative pr \
+    --no-matching -v --plottype pdf --write-csv  &
 
 Provided the list files exists, of course (the `--relative pr` is left
 even for the tas runs, just to keep things simple).
@@ -26,17 +35,18 @@ things run on eight cores:
 
 for epoch in 2050 2085
 do
-        fname="steering${epoch}.csv"
-        for var in tas pr
+    fname="steering${epoch}.csv"
+    for var in tas pr
+    do
+        listname1="@cmip-${var}-nlpoint-averaged.list"
+        listname2="@ecearth-${var}-nlpoint-averaged.list"
+        for season in djf jja
         do
-                listname1="@cmip-${var}-nlpoint-averaged.list"
-                listname2="@ecearth-${var}-nlpoint-averaged.list"
-                for season in djf jja
-                do
-                        echo "python -m kcs.change_perc.runall $listname1 --season $season  --steering $fname --runs $listname2 --relative pr --no-matching -v --plottype pdf --write-csv  &"
-                        python -m kcs.change_perc.runall $listname1 --season $season  --steering $fname --runs $listname2 --relative pr --no-matching -v --plottype pdf --write-csv  &
-                done
+            python -m kcs.change_perc.runall $listname1 --season $season  \
+              --steering $fname --runs $listname2 --relative pr --no-matching -v \
+              --plottype pdf --write-csv  &
         done
+    done
 done
 
 This may be I/O limited, and an eight times increase in running time
@@ -50,7 +60,6 @@ engine that Iris uses should be able to speed up things itself, but it
 is unclear how.
 
 """
-# pragma pylint: enable=line-too-long
 
 import sys
 import argparse
@@ -208,7 +217,7 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
                 xlabels = ['ave', 'P05', 'P10', 'P50', 'P90', 'P95']
                 logger.info("Creating plot for variable %s, season %s, epoch %s")
                 plot.run(perc_distr, labels, limits=None, columns=columns, xlabels=xlabels,
-                     scenarios=scenarios)
+                         scenarios=scenarios)
                 plt.tight_layout()
                 filename = f"{var}_{epoch}_{season}.{plottype.lower()}"
                 plt.savefig(filename, bbox_inches='tight')

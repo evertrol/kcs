@@ -1,5 +1,12 @@
-import iris
+"""DUMMY DOCSTRING"""
+
+from datetime import datetime
+from calendar import monthrange
+import numpy as np
 import cftime
+from cf_units import date2num
+import iris
+from iris.coords import DimCoord
 
 
 class RangeConstraint:
@@ -26,6 +33,7 @@ class RangeConstraint:
     def __init__(self, start, end):
         self.start = start
         self.end = end
+
     def __call__(self, cell):
         return self.start <= cell.point <= self.end
 
@@ -55,6 +63,7 @@ class EqualConstraint:
 
     def __init__(self, value):
         self.value = value
+
     def __call__(self, value):
         return self.value == value
 
@@ -94,12 +103,13 @@ def make_year_constraint_all_calendars(start, end):
             31, 12 or 30, 12 (for a 360-day calendar) for the end year
 
     """
+
     dates = {
         'default': (cftime.datetime(start, 1, 1), cftime.datetime(end, 12, 31)),
         '360_day': (cftime.Datetime360Day(start, 1, 1), cftime.Datetime360Day(end, 12, 30)),
         '365_day': (cftime.DatetimeNoLeap(start, 1, 1), cftime.DatetimeNoLeap(end, 12, 31)),
         'proleptic_gregorian': (cftime.DatetimeProlepticGregorian(start, 1, 1),
-		                cftime.DatetimeProlepticGregorian(end, 12, 31)),
+                                cftime.DatetimeProlepticGregorian(end, 12, 31)),
         'gregorian': (cftime.DatetimeGregorian(start, 1, 1), cftime.DatetimeGregorian(end, 12, 31)),
         'julian': (cftime.DatetimeJulian(start, 1, 1), cftime.DatetimeJulian(end, 12, 31)),
     }
@@ -120,12 +130,6 @@ def months_coord_to_days_coord(coord):
 
     """
 
-    from cf_units import date2num
-    from datetime import datetime, timedelta
-    from calendar import monthrange
-    import numpy as np
-    from iris.coords import DimCoord
-
     units = coord.units
     origin = units.origin
     # Assume an origin format of "<unit> since <start-date>", so we can split on 'since'
@@ -138,9 +142,9 @@ def months_coord_to_days_coord(coord):
     # Note: leading zeros for months, days, hours, minutes or seconds
     # may be safely ignored: 2010-1-1 or 2010-01-01 will both parse fine
     try:
-        t0 = datetime.strptime(startdate, "%Y-%m-%d %H:%M:%S")
+        t0 = datetime.strptime(startdate, "%Y-%m-%d %H:%M:%S")  # pylint: disable=invalid-name
     except ValueError:
-        t0 = datetime.strptime(startdate, "%Y-%m-%d")
+        t0 = datetime.strptime(startdate, "%Y-%m-%d")  # pylint: disable=invalid-name
 
     points = coord.points.astype(np.int)
     bounds = []

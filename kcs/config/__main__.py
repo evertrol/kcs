@@ -1,8 +1,12 @@
+"""DUMMY DOCSTRING"""
+
 import sys
 from .default import CONFIG_TOML_STRING
 
 
 def main():
+    """DUMMY DOCSTRING"""
+
     try:
         section = sys.argv[1]
     except IndexError:

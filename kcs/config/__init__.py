@@ -1,3 +1,6 @@
+"""DUMMY DOCSTRING"""
+
+
 import os
 import logging
 import toml
@@ -8,6 +11,8 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def adjust_config(config):
+    """DUMMY DOCSTRING"""
+
     # Small adjustment: TOML has only string keys in dicts, but here,
     # integer keys are needed
     if 'resampling' in config:
@@ -45,6 +50,8 @@ def nested_update(current, new):
 
 
 def read_config(filename):
+    """DUMMY DOCSTRING"""
+
     if not filename:
         filename = os.path.join(os.getcwd(), 'kcs-config.toml')
         if not os.path.exists(filename):
@@ -54,16 +61,16 @@ def read_config(filename):
     else:
         logger.debug("reading config file %s", filename)
 
-    with open(filename) as fh:
+    with open(filename) as fh:  # pylint: disable=invalid-name
         config = toml.load(fh)
 
-    for name, section  in config.items():
+    for name, section in config.items():
         if 'include' in section:
             fname = section['include']
             if fname.startswith('./'):  # relative with respect to the main config file
                 dirname = os.path.dirname(filename)
                 fname = os.path.normpath(os.path.join(dirname, fname))
-            with open(fname) as fh:
+            with open(fname) as fh:  # pylint: disable=invalid-name
                 section_config = toml.load(fh)
             if name not in section_config:
                 raise KeyError(f"{fname} is missing the [{name}] heading")

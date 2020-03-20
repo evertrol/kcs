@@ -10,7 +10,7 @@ from ..config import default_config
 
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def calc_percentiles(dataset, period, relative=False, reference_period=None):
@@ -76,7 +76,7 @@ def calc_percentile_distribution(dataset):
                           '75': 0, '90': 0, '95': 0}, index=STATS)
     percentiles = list(map(int, STATS[1:]))
     for key in percs.index:
-        p = np.percentile(dataset.loc[:, key], percentiles)
+        p = np.percentile(dataset.loc[:, key], percentiles)  # pylint: disable=invalid-name
         percs.loc[key, STATS[1:]] = p
         percs.loc[key, 'mean'] = dataset.loc[:, key].mean()
     return percs

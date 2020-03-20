@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def get_realization_from_path(path):
+    """DUMMY DOCSTRING"""
+
     regex = re.search(r'\_(?P<realization>\d+)\.nc$', path.name)
     if not regex:
         regex = re.search(r'r(?P<realization>\d+)i\d+p\d+', path.name)
@@ -43,7 +45,9 @@ def get_realization_from_path(path):
     return realization
 
 
-def get_varname(path):
+def get_varname(path):  # pylint: disable=inconsistent-return-statements
+    """DUMMY DOCSTRING"""
+
     match = re.search('^(?P<var>[a-z]+)_.*$', path.name)
     if match:
         return match.group('var')
@@ -51,7 +55,9 @@ def get_varname(path):
 
 def process_single(path, areas, targetgrid=None, save_result=True,
                    average_area=True, gridscheme='area', template=None,
-                   mp=False, tempdir=None, ignore_common_warnings=False):
+                   multiprocess=False, tempdir=None, ignore_common_warnings=False):
+    """DUMMY DOCSTRING"""
+
     if template is None:
         template = default_config['data']['extraction']['template']
     if isinstance(path, list):
@@ -99,7 +105,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
     data = []
     if save_result:
         with warnings.catch_warnings():
-            #warnings.filterwarnings("ignore", category=UserWarning)
+            # warnings.filterwarnings("ignore", category=UserWarning)
             for area, cube in cubes.items():
                 var = cube.var_name
                 # os.path.commonprefix is good enough for our purpose:
@@ -117,7 +123,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
                             area, realization, outpath)
                 iris.save(cube, outpath)
                 data.append(Data(outpath, realization, area, cube))
-    elif mp:  # We're using multiple processes in separate threads
+    elif multiprocess:  # We're using multiple processes in separate threads
         # We're saving the output to a temporary file
         # The data is generally too large to pass directly to the main thread,
         # so we need a workaround, and use disk space as intermediate storage
@@ -126,6 +132,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
         # in parts).
         for area, cube in cubes.items():
             var = cube.var_name
+            # pylint: disable=invalid-name
             fh = NamedTemporaryFile(suffix=".nc", prefix="extract-ecearth",
                                     dir=tempdir, delete=False)
             outpath = fh.name
@@ -135,7 +142,7 @@ def process_single(path, areas, targetgrid=None, save_result=True,
     else:
         data = [Data(None, realization, area, cube) for area, cube in cubes.items()]
 
-    if mp:  # Ensure no cubes are passed back to the main thread
+    if multiprocess:  # Ensure no cubes are passed back to the main thread
         data = [Data(item.path, item.realization, item.area, None) for item in data]
 
     return data
@@ -144,6 +151,8 @@ def process_single(path, areas, targetgrid=None, save_result=True,
 def process(paths, areas, regrid=False, save_result=True, average_area=True,
             gridscheme='area', nproc=1, template=None, tempdir=None,
             subdir_per_realization=False, ignore_common_warnings=False):
+    """DUMMY DOCSTRING"""
+
     if template is None:
         template = default_config['data']['extraction']['template']
     if subdir_per_realization:
@@ -154,12 +163,12 @@ def process(paths, areas, regrid=False, save_result=True, average_area=True,
 
     targetgrid = None
     if regrid:
-        targetgrid = kcs.utils.coord.create_grid()
+        targetgrid = create_grid()
 
     func = functools.partial(process_single, areas=areas, targetgrid=targetgrid,
                              save_result=save_result, average_area=average_area,
                              gridscheme=gridscheme, template=template,
-                             mp=(nproc > 1), tempdir=tempdir,
+                             multiprocess=(nproc > 1), tempdir=tempdir,
                              ignore_common_warnings=ignore_common_warnings)
     if nproc == 1:
         data = list(itertools.chain.from_iterable(map(func, paths)))
@@ -172,6 +181,8 @@ def process(paths, areas, regrid=False, save_result=True, average_area=True,
 def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1,
         template=None, tempdir=None, subdir_per_realization=False,
         ignore_common_warnings=False):
+    """DUMMY DOCSTRING"""
+
     if template is None:
         template = default_config['data']['extraction']['template']
     paths = [pathlib.Path(str(path)) if not isinstance(path, pathlib.Path) else path

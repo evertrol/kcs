@@ -1,11 +1,7 @@
 """DUMMY DOCSTRING"""
 
 import math
-import re
-import pathlib
-import glob
 import itertools
-import functools
 from datetime import datetime
 import multiprocessing
 import logging
@@ -234,12 +230,12 @@ def calculate_s2(means, indices, scenarios):
             s2_indices[period] = s2_indices[period][selection]
             logger.debug("Subsetting down to %d samples", selection.sum())
 
-
     return s2_indices
 
 
 def calculate_s3(indices_dict, penalties, nstep3=None, nsample=None,
                  minimum_penalty=None):
+
     """Calculate the subset S3: find a subset with the least re-use of
     segments, using random sampling"""
 
@@ -254,8 +250,8 @@ def calculate_s3(indices_dict, penalties, nstep3=None, nsample=None,
     rng = np.random.default_rng()   # pylint: disable=no-member
     for period, indices in indices_dict.items():
         n = len(indices)  # pylint: disable=invalid-name
-        m = math.factorial(n) // math.factorial(nstep3) // math.factorial(n - nstep3)
-        logger.debug("Number of combinations for the %s period = %d", period, m)
+        ncomb = math.factorial(n) // math.factorial(nstep3) // math.factorial(n - nstep3)
+        logger.debug("Number of combinations for the %s period = %d", period, ncomb)
         best = np.inf
         for i in range(nsample):
             choice = rng.choice(indices, size=nstep3, replace=False)
@@ -321,7 +317,7 @@ def find_resamples(indices, means, precip_change, ranges, penalties,
     return indices
 
 
-def resample(indices, data, variables, seasons, relative, means):
+def resample(indices, data, variables, seasons, relative):
     """Perform the actual resampling of data, given the resampled indices"""
 
     percs = list(map(float, STATS[1:]))
@@ -414,6 +410,6 @@ def run(dataset, steering_table, ranges, penalties,
         all_indices[mainkey] = {'data': final_indices, 'meta': attrs}
 
     diffs = resample(all_indices, data, variables, seasons=['djf', 'mam', 'jja', 'son'],
-                     relative=relative, means=means)
+                     relative=relative)
 
     return all_indices, diffs

@@ -16,7 +16,6 @@ of input data, if e.g. the requested range is large.)
 import logging
 from datetime import datetime, timedelta
 import numpy as np
-import pandas as pd
 import iris
 try:
     from iris.util import equalise_attributes
@@ -27,7 +26,7 @@ from ..config import default_config
 from ..utils.constraints import EqualConstraint, RangeConstraint
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def num2date(coord, index=None):

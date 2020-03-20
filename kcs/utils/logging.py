@@ -1,7 +1,11 @@
+"""DUMMY DOCSTRING"""
+
 import logging
 
 
 def setup(verbosity=0, logname='kcs'):
+    """DUMMY DOCSTRING"""
+
     levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
     level = levels[max(0, min(verbosity, len(levels)-1))]
     handler = logging.StreamHandler()
@@ -13,5 +17,3 @@ def setup(verbosity=0, logname='kcs'):
     logger = logging.getLogger(logname)
     logger.setLevel(level)
     logger.addHandler(handler)
-
-

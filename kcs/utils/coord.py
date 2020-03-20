@@ -81,6 +81,8 @@ def create_grid():
 
 
 def parse_area(area):
+    """Parse areas as defined in the config file & format"""
+
     if 'latitude' in area:
         lat = area['latitude']
     elif 'lat' in area:
