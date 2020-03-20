@@ -1,7 +1,7 @@
 import os
 import logging
 import toml
-from .default import config_toml_string
+from .default import CONFIG_TOML_STRING
 
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -23,9 +23,6 @@ def adjust_config(config):
                     continue
                 if key not in config['data'][sub]['matching']:
                     config['data'][sub]['matching'][key] = value
-
-default_config = toml.loads(config_toml_string)
-adjust_config(default_config)
 
 
 def nested_update(current, new):
@@ -81,3 +78,7 @@ def read_config(filename):
         default_config[name] = section
 
     return default_config
+
+
+default_config = toml.loads(CONFIG_TOML_STRING)  # pylint: disable=invalid-name
+adjust_config(default_config)

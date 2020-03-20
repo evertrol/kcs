@@ -1,4 +1,6 @@
-config_toml_string = r'''
+"""The default configuration, as a string in TOML format"""
+
+CONFIG_TOML_STRING = r'''
 
 # Notes about values in the TOML config file:
 # - strings should always be quoted. Multi-line strings are possible

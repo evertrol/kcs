@@ -1,16 +1,16 @@
 import sys
-from .default import config_toml_string
+from .default import CONFIG_TOML_STRING
 
 
 def main():
     try:
         section = sys.argv[1]
     except IndexError:
-        print(config_toml_string.strip())
+        print(CONFIG_TOML_STRING.strip())
         return
 
     found = False
-    for line in config_toml_string.split('\n'):
+    for line in CONFIG_TOML_STRING.split('\n'):
         if line == f"[{section}]":
             found = True
         elif line.startswith('[') and not line.startswith(f"[{section}"):  # new section
