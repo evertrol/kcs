@@ -64,6 +64,7 @@ def read_config(filename):
         if 'include' in section:
             fname = section['include']
             if fname.startswith('./'):  # relative with respect to the main config file
+                dirname = os.path.dirname(filename)
                 fname = os.path.normpath(os.path.join(dirname, fname))
             with open(fname) as fh:
                 section_config = toml.load(fh)
