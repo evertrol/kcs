@@ -29,7 +29,10 @@ scitools-iris = { git = "https://github.com/evertrol/iris.git", branch = "pyke3"
 #cartopy = { git = "https://github.com/SciTools/cartopy.git" }
 
 [tool.poetry.dev-dependencies]
-#pytest = "^5.2"
+pytest = "^5.2"
+Sphinx = "^2.4.4"
+pylint = "^2.4.4"
+flake8 = "^3.7.9"
 
 [tool.poetry.scripts]
 resample = "kcs.resampling"
