@@ -22,7 +22,7 @@ import warnings
 import logging
 import iris
 from ..utils.io import load_cube
-from ..utils.coord import fixcoords, extract_areas
+from ..utils.coord import fixcoords, extract_areas, create_grid
 from ..utils.date import months_coord_to_days_coord
 from ..config import default_config
 
