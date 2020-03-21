@@ -32,7 +32,7 @@ from ..utils.argparse import parser as kcs_parser
 from ..utils.logging import setup as setup_logging
 from ..utils.atlist import atlist
 from ..utils.attributes import get as get_attrs
-from . import run
+from .core import run
 
 
 logger = logging.getLogger('steering')  # pylint: disable=invalid-name

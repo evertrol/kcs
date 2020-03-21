@@ -25,7 +25,7 @@ from ..utils.attributes import get as get_attrs
 from ..tas_change.plot import plot as cmipplot
 from ..tas_change.plot import finish as plot_finish
 from ..utils.atlist import atlist
-from . import normalize_average_dataset, num2date
+from .core import normalize_average_dataset, num2date
 
 
 # If we run as a runnable module, use a more appropriate logger name

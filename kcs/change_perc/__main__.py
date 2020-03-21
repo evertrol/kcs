@@ -32,7 +32,7 @@ from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
-from . import run
+from .core import run
 
 
 logger = logging.getLogger('change-perc')  # pylint: disable=invalid-name

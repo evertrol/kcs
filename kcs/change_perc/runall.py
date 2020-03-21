@@ -81,7 +81,7 @@ from ..utils.logging import setup as setup_logging
 from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
-from . import run as calculate
+from .core import run as calculate
 from . import plot
 
 

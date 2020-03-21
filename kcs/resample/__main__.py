@@ -36,7 +36,7 @@ from ..utils.logging import setup as setup_logging
 from ..utils.atlist import atlist
 from ..utils.attributes import get as get_attrs
 from ..config import read_config, default_config
-from . import run
+from .core import run
 
 
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']

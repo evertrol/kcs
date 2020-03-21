@@ -16,11 +16,11 @@ import sys
 import argparse
 import itertools
 import logging
-from . import run
 from ..utils.logging import setup as setup_logging
 from ..utils.argparse import parser as kcs_parser
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
+from .core import run
 
 
 logger = logging.getLogger('extraction')  # pylint: disable=invalid-name
