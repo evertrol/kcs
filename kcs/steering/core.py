@@ -117,8 +117,8 @@ def normalize(cubes, refvalues, relative):
     return cubes
 
 
-def calc(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
-         timespan=30, maxepoch=2100):
+def calc_steering(dataset, distribution, scenarios, rolling_mean=0, rounding=0,
+                  timespan=30, maxepoch=2100):
     """Parameters
     ----------
     - dataset: Iris.cube.Cube
@@ -229,9 +229,9 @@ def normalize_average_dataset(cubes, season=None, average_years=True, relative=F
     return mean
 
 
-def run(dataset, percentiles, scenarios, season=None, average_years=True,
-        relative=False, reference_period=None,
-        timespan=30, rolling_mean=0, rounding=None):
+def calc(dataset, percentiles, scenarios, season=None, average_years=True,
+         relative=False, reference_period=None,
+         timespan=30, rolling_mean=0, rounding=None):
     """Calculate the percentile yearly change distribution for the input data
 
     Also performs extracting of season (optional), averaging of years
@@ -255,6 +255,6 @@ def run(dataset, percentiles, scenarios, season=None, average_years=True,
     mean = normalize_average_dataset(dataset['cube'], season, average_years,
                                      relative=relative, reference_period=reference_period)
 
-    steering = calc(mean, percentiles, scenarios, timespan=timespan,
-                    rolling_mean=rolling_mean, rounding=rounding)
+    steering = calc_steering(mean, percentiles, scenarios, timespan=timespan,
+                             rolling_mean=rolling_mean, rounding=rounding)
     return steering

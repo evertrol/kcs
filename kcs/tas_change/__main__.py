@@ -23,7 +23,7 @@ from ..utils.argparse import parser as kcs_parser
 from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
-from .core import run
+from .core import calc
 
 
 MINDATA = {'historical': 20, 'future': 4}
@@ -128,12 +128,12 @@ def main():
         dataset, match_by=args.match_by, on_no_match=args.on_no_match,
         historical_key=args.historical_key)
 
-    result, _ = run(dataset, historical_key=args.historical_key,
-                    reference_period=args.reference_period,
-                    season=args.season, average_years=args.average_years,
-                    relative=args.relative,
-                    period=args.period, normby=args.norm_by,
-                    average_experiments=args.average_experiments)
+    result, _ = calc(dataset, historical_key=args.historical_key,
+                     reference_period=args.reference_period,
+                     season=args.season, average_years=args.average_years,
+                     relative=args.relative,
+                     period=args.period, normby=args.norm_by,
+                     average_experiments=args.average_experiments)
     result.to_csv(args.outfile, index_label="date")
     logger.info("Done processing: percentiles = %s", result)
 

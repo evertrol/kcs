@@ -351,10 +351,10 @@ def resample(indices, data, variables, seasons, relative):
     return diffs
 
 
-def run(dataset, steering_table, ranges, penalties,
-        nstep1=None, nstep3=None, nsample=None,
-        nsections=None, reference_period=None,
-        relative=None, nproc=None):
+def calc(dataset, steering_table, ranges, penalties,
+         nstep1=None, nstep3=None, nsample=None,
+         nsections=None, reference_period=None,
+         relative=None, nproc=None):
     """DUMMY DOCSTRING"""
 
     if relative is None:

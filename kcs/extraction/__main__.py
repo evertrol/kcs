@@ -20,7 +20,7 @@ from ..utils.logging import setup as setup_logging
 from ..utils.argparse import parser as kcs_parser
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
-from .core import run
+from .core import calc
 
 
 logger = logging.getLogger('extraction')  # pylint: disable=invalid-name
@@ -83,12 +83,12 @@ def main():
     logger.debug("Args: %s", args)
 
     files = list(itertools.chain.from_iterable(atlist(fname) for fname in args.files))
-    run(files, args.area, regrid=args.regrid,
-        save_result=args.save_result, average_area=args.average_area,
-        nproc=args.nproc, template=args.template,
-        tempdir=args.tempdir,
-        subdir_per_realization=args.subdir_per_realization,
-        ignore_common_warnings=args.ignore_common_warnings)
+    calc(files, args.area, regrid=args.regrid,
+         save_result=args.save_result, average_area=args.average_area,
+         nproc=args.nproc, template=args.template,
+         tempdir=args.tempdir,
+         subdir_per_realization=args.subdir_per_realization,
+         ignore_common_warnings=args.ignore_common_warnings)
     logger.debug("%s finished", sys.argv[0])
 
 

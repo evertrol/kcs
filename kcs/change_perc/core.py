@@ -93,7 +93,7 @@ def extract_season(cubes, season):
     return cubes
 
 
-def run(dataset, season, period, relative=False, reference_period=None):
+def calc(dataset, season, period, relative=False, reference_period=None):
     """DUMMY DOCSTRING"""
     if reference_period is None:
         reference_period = default_config['data']['cmip']['control_period']

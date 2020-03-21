@@ -178,9 +178,9 @@ def process(paths, areas, regrid=False, save_result=True, average_area=True,
     return data
 
 
-def run(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1,
-        template=None, tempdir=None, subdir_per_realization=False,
-        ignore_common_warnings=False):
+def calc(paths, areas, regrid=False, save_result=True, average_area=True, nproc=1,
+         template=None, tempdir=None, subdir_per_realization=False,
+         ignore_common_warnings=False):
     """DUMMY DOCSTRING"""
 
     if template is None:

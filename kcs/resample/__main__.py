@@ -36,7 +36,7 @@ from ..utils.logging import setup as setup_logging
 from ..utils.atlist import atlist
 from ..utils.attributes import get as get_attrs
 from ..config import read_config, default_config
-from .core import run
+from .core import calc
 
 
 STATS = ['mean', '5', '10', '25', '50', '75', '90', '95']
@@ -281,9 +281,9 @@ def main():
 
     steering_table = read_steering_target(args.steering, args.pr_scenarios, args.scenario)
 
-    indices, diffs = run(dataset, steering_table, args.conditions, args.penalties,
-                         args.nstep1, args.nstep3, args.nsample, args.nsections,
-                         args.reference_period, relative=args.relative, nproc=args.nproc)
+    indices, diffs = calc(dataset, steering_table, args.conditions, args.penalties,
+                          args.nstep1, args.nstep3, args.nsample, args.nsections,
+                          args.reference_period, relative=args.relative, nproc=args.nproc)
 
     save_indices_h5(args.indices_out, indices)
     save_resamples(args.resamples_out, diffs)

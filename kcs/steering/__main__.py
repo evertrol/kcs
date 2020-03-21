@@ -32,7 +32,7 @@ from ..utils.argparse import parser as kcs_parser
 from ..utils.logging import setup as setup_logging
 from ..utils.atlist import atlist
 from ..utils.attributes import get as get_attrs
-from .core import run
+from .core import calc
 
 
 logger = logging.getLogger('steering')  # pylint: disable=invalid-name
@@ -107,9 +107,9 @@ def main():
     percentiles = pd.read_csv(args.csv, index_col=0)
     percentiles.index = pd.to_datetime(percentiles.index)
 
-    steering = run(dataset, percentiles, args.scenarios, timespan=args.timespan,
-                   rolling_mean=args.rolling_mean, rounding=args.rounding,
-                   reference_period=args.reference_period)
+    steering = calc(dataset, percentiles, args.scenarios, timespan=args.timespan,
+                    rolling_mean=args.rolling_mean, rounding=args.rounding,
+                    reference_period=args.reference_period)
     steering = pd.DataFrame(steering)
 
     if args.outfile:

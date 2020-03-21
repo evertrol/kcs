@@ -32,7 +32,7 @@ from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
 from ..config import read_config, default_config
-from .core import run
+from .core import calc
 
 
 logger = logging.getLogger('change-perc')  # pylint: disable=invalid-name
@@ -189,8 +189,8 @@ def main():
 
         dataset = concat_cubes(dataset, historical_key=args.historical_key)
 
-    percentiles, run_changes = run(dataset, args.season, args.period,
-                                   reference_period=args.reference_period, relative=args.relative)
+    percentiles, run_changes = calc(dataset, args.season, args.period,
+                                    reference_period=args.reference_period, relative=args.relative)
 
     if args.csvfile:
         csvfile = f"varchange_{args.season}.csv" if args.csvfile is True else args.csvfile

@@ -302,8 +302,8 @@ def calc_percentiles(dataset, period=PERC_PERIOD, average_experiments=False, npr
         percs, index=pd.DatetimeIndex([datetime(year, 1, 1) for year in years]))
 
 
-def run(dataset, historical_key, reference_period, season=None, average_years=True,
-        relative=False, period=PERC_PERIOD, normby='run', average_experiments=False):
+def calc(dataset, historical_key, reference_period, season=None, average_years=True,
+         relative=False, period=PERC_PERIOD, normby='run', average_experiments=False):
     """Calculate the percentile yearly change distribution for the input data
 
     Also performs extracting of season (optional), averaging of years

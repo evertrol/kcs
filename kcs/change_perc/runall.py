@@ -81,7 +81,7 @@ from ..utils.logging import setup as setup_logging
 from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
-from .core import run as calculate
+from .core import calc
 from . import plot
 
 
@@ -185,8 +185,8 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
             for season in seasons:
                 logger.info("Calculating CMIP percentiles for %s, season %s, epoch %s",
                             var, season, epoch)
-                perc_distr, perc = calculate(vargroup.copy(), season, period, relative=rel,
-                                             reference_period=reference_period)
+                perc_distr, perc = calc(vargroup.copy(), season, period, relative=rel,
+                                        reference_period=reference_period)
                 if writecsv:
                     filename = f"{var}_{epoch}_{season}_perc_distr.csv"
                     perc_distr.to_csv(filename, index=True)
@@ -200,8 +200,8 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
                     period = [int(year) for year in row['period'].strip('()').split(',')]
                     logger.info("Calculating runs percentiles for %s, season %s, epoch %s, "
                                 "scenario %s", var, season, epoch, name)
-                    _, scenarios[name] = calculate(data, season, period, relative=rel,
-                                                   reference_period=reference_period)
+                    _, scenarios[name] = calc(data, season, period, relative=rel,
+                                              reference_period=reference_period)
                     if writecsv:
                         filename = f"{var}_{epoch}_{season}_{name}_perc.csv"
                         scenarios[name].to_csv(filename, index=False)
