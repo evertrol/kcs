@@ -22,7 +22,7 @@ from ..config import default_config, read_config
 from ..utils.logging import setup as setup_logging
 from ..utils.argparse import parser as kcs_parser
 from ..utils.attributes import get as get_attrs
-from ..tas_change.plot import plot as cmipplot
+from ..tas_change.plot import tas_change
 from ..tas_change.plot import finish as plot_finish
 from ..utils.atlist import atlist
 from .core import normalize_average_dataset, num2date
@@ -77,16 +77,16 @@ def plot_scenarios(scenarios, reference_epoch=None):
         plt.scatter(date, temp, s=100, marker='o', color='green', zorder=6)
 
 
-def run(percentiles, steering_table, outfile, reference_epoch=None,
-        xlabel=None, ylabel=None, xrange=None, yrange=None, title=None,
-        grid=True, legend=True, smooth=None,
-        extra_data=None, extra_label=''):
+def plot(percentiles, steering_table, outfile, reference_epoch=None,
+         xlabel=None, ylabel=None, xrange=None, yrange=None, title=None,
+         grid=True, legend=True, smooth=None,
+         extra_data=None, extra_label=''):
     """DUMMY DOCSTRING"""
 
     figure = plt.figure(figsize=(12, 8))
     if smooth:
         percentiles = percentiles.rolling(window=smooth, center=True).mean()
-    figure = cmipplot(figure, percentiles, xrange=xrange, yrange=yrange)
+    figure = tas_change(figure, percentiles, xrange=xrange, yrange=yrange)
 
     if extra_data:
         years = [dt.year for dt in percentiles.index]
@@ -167,10 +167,10 @@ def main():
         extra_data = normalize_average_dataset(dataset['cube'], relative=args.relative,
                                                reference_period=args.reference_period)
 
-    run(percentiles, steering_table, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
-        xrange=args.xrange, yrange=args.yrange, title=args.title, smooth=args.smooth,
-        extra_data=extra_data, extra_label=args.extra_label,
-        reference_epoch=args.reference_epoch, grid=args.grid, legend=args.legend)
+    plot(percentiles, steering_table, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
+         xrange=args.xrange, yrange=args.yrange, title=args.title, smooth=args.smooth,
+         extra_data=extra_data, extra_label=args.extra_label,
+         reference_epoch=args.reference_epoch, grid=args.grid, legend=args.legend)
     logger.info("Done processing")
 
 

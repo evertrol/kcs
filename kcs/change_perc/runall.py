@@ -82,7 +82,7 @@ from ..utils.attributes import get as get_attrs
 from ..utils.matching import match
 from ..utils.atlist import atlist
 from .core import calc
-from . import plot
+from .plot import plot
 
 
 VARNAME = {
@@ -216,8 +216,8 @@ def run(dataset, runs, seasons, steering, relative=None, reference_span=30,
                 columns = ['mean', '5', '10', '50', '90', '95']
                 xlabels = ['ave', 'P05', 'P10', 'P50', 'P90', 'P95']
                 logger.info("Creating plot for variable %s, season %s, epoch %s")
-                plot.run(perc_distr, labels, limits=None, columns=columns, xlabels=xlabels,
-                         scenarios=scenarios)
+                plot(perc_distr, labels, limits=None, columns=columns, xlabels=xlabels,
+                     scenarios=scenarios)
                 plt.tight_layout()
                 filename = f"{var}_{epoch}_{season}.{plottype.lower()}"
                 plt.savefig(filename, bbox_inches='tight')

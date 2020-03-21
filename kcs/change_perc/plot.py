@@ -144,7 +144,7 @@ def plot_finish(colors=None,
     return figure
 
 
-def run(data, labels, limits, columns, xlabels, scenarios=None, only_scenario_mean=False):
+def plot(data, labels, limits, columns, xlabels, scenarios=None, only_scenario_mean=False):
     """Do all the work"""
 
     if scenarios is None:
@@ -221,9 +221,9 @@ def main():
     scenarios = OrderedDict()
     for name, csvfile in args.scenario_run:
         scenarios[name] = pd.read_csv(csvfile, index_col=False)
-    run(data, labels, limits=args.ylimits,
-        columns=args.columns, xlabels=args.xlabels,
-        scenarios=scenarios, only_scenario_mean=args.only_scenario_mean)
+    plot(data, labels, limits=args.ylimits,
+         columns=args.columns, xlabels=args.xlabels,
+         scenarios=scenarios, only_scenario_mean=args.only_scenario_mean)
 
     plt.tight_layout()
     plt.savefig(args.output, bbox_inches='tight')

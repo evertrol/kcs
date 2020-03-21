@@ -34,7 +34,7 @@ def num2date(coord, index=None):
                            coord.units.calendar)
 
 
-def plot(figure, percs, dataset=None, legend=False, xrange=None, yrange=None):
+def tas_change(figure, percs, dataset=None, legend=False, xrange=None, yrange=None):
     """Plot the percentile distribution as function of time
 
     Parameters
@@ -115,15 +115,15 @@ def finish(xlabel=None, ylabel=None, title=None, legend=True, grid=True):
         plt.legend()
 
 
-def run(percentiles, outfile, xlabel=None, ylabel=None,
-        xrange=None, yrange=None, title=None, grid=True, legend=True,
-        smooth=None):
+def plot(percentiles, outfile, xlabel=None, ylabel=None,
+         xrange=None, yrange=None, title=None, grid=True, legend=True,
+         smooth=None):
     """DUMMY DOCSTRING"""
 
     figure = plt.figure(figsize=(12, 8))
     if smooth:
         percentiles = percentiles.rolling(window=smooth, center=True).mean()
-    plot(figure, percentiles, xrange=xrange, yrange=yrange)
+    tas_change(figure, percentiles, xrange=xrange, yrange=yrange)
 
     finish(xlabel=xlabel, ylabel=ylabel, title=title, grid=grid, legend=legend)
 
@@ -162,9 +162,9 @@ def main():
 
     percentiles = pd.read_csv(args.infile, index_col=0)
     percentiles.index = pd.to_datetime(percentiles.index)
-    run(percentiles, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
-        xrange=args.xrange, yrange=args.yrange, title=args.title,
-        grid=args.grid, legend=args.legend, smooth=args.smooth)
+    plot(percentiles, args.outfile, xlabel=args.xlabel, ylabel=args.ylabel,
+         xrange=args.xrange, yrange=args.yrange, title=args.title,
+         grid=args.grid, legend=args.legend, smooth=args.smooth)
     logger.info("Done processing")
 
 
