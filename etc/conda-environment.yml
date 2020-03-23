@@ -1,0 +1,9 @@
+name: iris
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - h5py=2.10.0
+  - iris=2.4.0
+  - pandas=1.0.1
+  - toml=0.10.0
