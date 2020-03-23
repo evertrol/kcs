@@ -702,7 +702,7 @@ All in all, this looks like:
 	  --season djf  --steering steering.csv --runs @ecearth-tas-nlpoint-averaged.list \
 	  --relative pr --no-matching --plottype pdf --write-csv
 
-Note that options like ``--no-matching` are still provided, and apply
+Note that options like ``--no-matching`` are still provided, and apply
 *only* to the model of interest, that is, the EC-EARTH data here.
 
 
