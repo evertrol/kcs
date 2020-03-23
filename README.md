@@ -3,10 +3,11 @@ KNMI Climate Scenarios
 
 Run the steps to resample global models to be applied as input boundaries for a local model. This package is based on the method described in Lenderink+, 2014.
 
+See [the usage
+guide](https://knmi-climate-scenarios.readthedocs.io/en/latest/usage.html)
+for an introduction.
 
-See [the usage guide](https://github.com/eucp-project/kcs/blob/master/docs/source/usage.rst) for an introduction.
-
-See the [installation document](https://github.com/eucp-project/kcs/blob/master/INSTALL) to install the software.
+See the [installation document](https://github.com/eucp-project/kcs/blob/master/INSTALL) on how to install the software.
 
 
 Copyright
