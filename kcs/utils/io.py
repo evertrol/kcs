@@ -97,8 +97,9 @@ def extract_areas(cube, areas=None, targetgrid=None, average_area=True, gridsche
             if isinstance(area, iris.Constraint):
                 excube = excube.extract(area)
             elif isinstance(area, dict) and 'latitude' in area and 'longitude' in area:
+                # To do: this if-statement needs to be rewritten; note the pylint/flake8 comments
                 if (isinstance(area['latitude'], (list, tuple)) and len(area['latitude']) == 2 and
-                    isinstance(area['longitude'], (list, tuple)) and len(area['longitude']) == 2):  # pylint: disable=bad-continuation
+                    isinstance(area['longitude'], (list, tuple)) and len(area['longitude']) == 2):  # pylint: disable=bad-continuation,line-too-long  # noqa: E129, E501
                     long_constraint = CoordConstraint(area['longitude'][0], area['longitude'][1])
                     lat_constraint = CoordConstraint(area['latitude'][0], area['latitude'][1])
                     constraint = iris.Constraint(longitude=long_constraint, latitude=lat_constraint)

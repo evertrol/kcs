@@ -14,7 +14,8 @@ CONFIG_TOML_STRING = r'''
 [scenario]
 
 [scenario.defs]
-# Note: extra definitions for a name or precip do not have to be commented out below, even if the corresponding
+# Note: extra definitions for a name or precip do not have
+# to be commented out below, even if the corresponding
 # scenarios are commented-out above
 
 # percentile of CMIP tas for a given epoch that the 'W' and 'G' scenarios correspond to
