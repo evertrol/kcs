@@ -13,6 +13,7 @@ Welcome to kcs's documentation!
    usage.rst
    config.rst
    extras.rst
+   script.rst
 
 
 Indices and tables

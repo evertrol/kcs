@@ -44,38 +44,38 @@ ecearth_files = {key: list(atlist(fname)) for key, fname in ecearth_lists.items(
 
 # Step 0: extract and average the areas
 
-##% data = {'cmip': {'global': {}, 'nlpoint': {}},
-##%         'ecearth': {'global': {}, 'nlpoint': {}}}
-##% # Areas are given as a dictionary: {name: definition}
-##% # The definition can be taken from the default_config
-##% # Conveniently, None is the definition for the global area
-##% area = {'global': None}
-##% # Almost all parameters have a proper default
-##% # The template parameter is just made explicit
-##% template = "data/cmip6/{var}-{area}-averaged/{filename}.nc"
-##% data['cmip']['global']['tas'] = extract(cmip_files['tas'], area, ignore_common_warnings=True,
-##%                                      template=template)
-##% area = {'nlpoint': default_config['areas']['nlpoint']}
-##% for var in {'tas', 'pr'}:
-##%     data['cmip']['nlpoint'][var] = extract(cmip_files[var], area, ignore_common_warnings=True,
-##%                                         template=template)
-##%
-##% area = {'global': None}
-##% template = "data/ecearth/{var}-{area}-averaged/{filename}.nc"
-##% data['ecearth']['global']['tas'] = extract(ecearth_files['tas'], area, ignore_common_warnings=True,
-##%                                         template=template)
-##% area = {'nlpoint': default_config['areas']['nlpoint']}
-##% for var in {'tas', 'pr'}:
-##%     data['ecearth']['nlpoint'][var] = extract(ecearth_files[var], area, ignore_common_warnings=True,
-##%                                            template=template)
-##%
-##%
+data = {'cmip': {'global': {}, 'nlpoint': {}},
+        'ecearth': {'global': {}, 'nlpoint': {}}}
+# Areas are given as a dictionary: {name: definition}
+# The definition can be taken from the default_config
+# Conveniently, None is the definition for the global area
+area = {'global': None}
+# Almost all parameters have a proper default
+# The template parameter is just made explicit
+template = "data/cmip6/{var}-{area}-averaged/{filename}.nc"
+data['cmip']['global']['tas'] = extract(cmip_files['tas'], area, ignore_common_warnings=True,
+                                     template=template)
+area = {'nlpoint': default_config['areas']['nlpoint']}
+for var in {'tas', 'pr'}:
+    data['cmip']['nlpoint'][var] = extract(cmip_files[var], area, ignore_common_warnings=True,
+                                        template=template)
+
+area = {'global': None}
+template = "data/ecearth/{var}-{area}-averaged/{filename}.nc"
+data['ecearth']['global']['tas'] = extract(ecearth_files['tas'], area, ignore_common_warnings=True,
+                                        template=template)
+area = {'nlpoint': default_config['areas']['nlpoint']}
+for var in {'tas', 'pr'}:
+    data['ecearth']['nlpoint'][var] = extract(ecearth_files[var], area, ignore_common_warnings=True,
+                                           template=template)
+
+
 
 # Step 1-pre: read previously created data
 datasets = {'cmip': {'global': {}, 'nlpoint': {}},
             'ecearth': {'global': {}, 'nlpoint': {}}}
 
-skipped_above = True
+skipped_above = False
 if skipped_above:
     # Use pre-defined @-lists
     cmip_lists = {'global-tas': "@cmip6-tas-global-averaged.list",
@@ -283,9 +283,6 @@ for key in diffs:
             print(var, season)
             print(diffs[key][var][season])
 
-
-#        save_indices_h5(args.indices_out, indices)
-#    save_resamples(args.resamples_out, diffs)
 
 columns = ['mean', '5', '10', '50', '90', '95']
 xlabels = ['ave', 'P05', 'P10', 'P50', 'P90', 'P95']
