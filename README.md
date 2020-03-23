@@ -1,6 +1,10 @@
 KNMI Climate Scenarios
 ======================
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Actions Status](https://github.com/eucp-project/kcs/workflows/kcs-listing/badge.svg)](https://github.com/eucp-project/kcs/actions)
+
+
 Run the steps to resample global models to be applied as input boundaries for a local model. This package is based on the method described in Lenderink+, 2014.
 
 See [the usage
