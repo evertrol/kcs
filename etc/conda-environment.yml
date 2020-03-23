@@ -1,4 +1,4 @@
-name: iris
+name: kcs
 channels:
   - conda-forge
   - defaults

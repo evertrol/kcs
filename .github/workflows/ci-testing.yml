@@ -1,0 +1,38 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: atlist
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: goanpeca/setup-miniconda@v1
+      with:
+         activate-environment: kcs
+         auto-update-conda: true
+         python-version: ${{ matrix.python-version }}
+         channels: conda-forge
+         environment-file: etc/conda-environment.yml
+    - shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+    - shell: bash -l {0}
+      # Be explicit about what we ignore
+      run: |
+        pip install pylint flake8
+        pylint -d too-many-locals -d too-many-branches -d too-many-arguments -d too-many-statements -d too-few-public-methods -d duplicate-code  kcs
+        flake8 --max-line-length 100 kcs
