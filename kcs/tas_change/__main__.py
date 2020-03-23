@@ -128,8 +128,9 @@ def main():
         dataset, match_by=args.match_by, on_no_match=args.on_no_match,
         historical_key=args.historical_key)
 
-    result, _ = calc(dataset, historical_key=args.historical_key,
+    result, _ = calc(dataset,
                      reference_period=args.reference_period,
+                     historical_key=args.historical_key,
                      season=args.season, average_years=args.average_years,
                      relative=args.relative,
                      period=args.period, normby=args.norm_by,
