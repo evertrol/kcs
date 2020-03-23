@@ -2,6 +2,7 @@
 
 import pathlib
 import logging
+import pandas as pd
 import iris
 import iris.cube
 import iris.coord_categorisation
@@ -12,10 +13,25 @@ try:
 except ImportError:   # Iris 2
     from iris.experimental.equalise_cubes import equalise_attributes
 import iris.exceptions
+from ..config import default_config
 from .constraints import CoordConstraint
+from .attributes import get as get_attrs
 
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
+
+
+def read_averaged_data(paths, info_from=('attributes', 'filename'),
+                       attributes=None, filename_pattern=None):
+    """DUMMY DOC-STRING"""
+    cubes = [iris.load_cube(str(path)) for path in paths]
+
+    # Get the attributes, and create a dataframe with cubes & attributes
+    dataset = get_attrs(
+        cubes, paths, info_from=info_from,
+        attributes=attributes, filename_pattern=filename_pattern)
+
+    return dataset
 
 
 def load_cube(paths, variable_name=None):
@@ -108,3 +124,57 @@ def extract_areas(cube, areas=None, targetgrid=None, average_area=True, gridsche
         results.append(excube_meanarea)
 
     return results
+
+
+def concat_cubes(dataset, historical_key=None):
+    """Concatenate cubes into a dataset spanning the full time frame"""
+
+    if historical_key is None:
+        historical_key = default_config['data']['attributes']['historical_experiment']
+
+    concatenated = pd.DataFrame(columns=dataset.columns)
+    for model, group in dataset.groupby('model'):
+        future_sel = group['experiment'] != historical_key
+        for _, row in group.loc[future_sel, :].iterrows():
+            cube = row['cube']
+            matchid = row['index_match_run']
+            histcube = dataset.loc[matchid, 'cube']
+            time = cube.coord('time')
+            start = time.units.num2date(time.points)[0]
+            time = histcube.coord('time')
+            end = time.units.num2date(time.points)[-1]
+            if end > start:
+                logger.warning("Historical experiment ends past the start of future experiment: "
+                               "trimming historical dataset to match %s - %s r%di%dp%d",
+                               model, row['experiment'],
+                               row['realization'], row['initialization'], row['physics'])
+                logger.debug("Historical end: %s. Future start: %s", end, start)
+                logger.info("Constraining historical run to end before %s", start)
+                # pylint: disable=cell-var-from-loop
+                constraint = iris.Constraint(time=lambda cell: cell.point < start)
+                histcube = constraint.extract(histcube)
+                time = histcube.coord('time')
+                end = time.units.num2date(time.points)[-1]
+            # Since we may have matched on different realizations, set them to
+            # equal, otherwise the concatenation procedure will fail
+            histcube.replace_coord(cube.coord('realization'))
+            cubes = iris.cube.CubeList([histcube, cube])
+            equalise_attributes(cubes)
+            unify_time_units(cubes)
+            try:
+                row['cube'] = cubes.concatenate_cube()
+            except iris.exceptions.ConcatenateError as exc:
+                logger.warning("DATA SKIPPED: Error concatenating cubes: %s - %s r%di%dp%d: %s",
+                               model, row['experiment'], row['realization'],
+                               row['initialization'], row['physics'], exc)
+                continue
+            logger.info("Concatenated %s - %s r%di%dp%d", model, row['experiment'],
+                        row['realization'], row['initialization'], row['physics'])
+            # By adding the rows with concatenated cubes,
+            # we can construct a new DataFrame with only concatenated cubes,
+            # but with all the essential attributes from the input dataset.
+            concatenated = concatenated.append(row)
+    concatenated.reset_index(inplace=True)
+    logger.info("concatenated a total of %d realizations", len(concatenated))
+
+    return concatenated
