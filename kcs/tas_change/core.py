@@ -322,7 +322,7 @@ def calc(dataset, historical_key, reference_period, season=None, average_years=T
     """
 
     if not historical_key:
-        historical_key = default_config['data']['historical_experiment']
+        historical_key = default_config['data']['attributes']['historical_experiment']
 
     if season:
         dataset['cube'] = extract_season(dataset['cube'], season)
