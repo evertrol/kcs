@@ -24,16 +24,17 @@ fix_nonmatching_historical: randomrun
 """
 
 import logging
+from ..config import default_config
 
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-def match(dataset, match_by='ensemble', on_no_match='error', historical_key='historical'):
+def match(dataset, match_by=None, on_no_match=None, historical_key=None):
     """Match dataset experiments, historical with future experiments
 
-    Anything where the experiment does not match 'historical' is
-    assumed to be a future experiment (rcp, ssp).
+    Anything where the experiment does not match the `historical_key`
+    is assumed to be a future experiment (rcp, ssp).
 
     Parameters
     ----------
@@ -74,6 +75,13 @@ def match(dataset, match_by='ensemble', on_no_match='error', historical_key='his
       on the choice of `match_by` and `on_no_match`.
 
     """
+
+    if match_by is None:
+        match_by = default_config['data']['matching']['by']
+    if on_no_match is None:
+        on_no_match = default_config['data']['matching']['on_fail']
+    if historical_key is None:
+        historical_key = default_config['data']['attributes']['historical_experiment']
 
     dataset['index_match_run'] = -1
 
