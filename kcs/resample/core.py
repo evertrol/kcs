@@ -360,7 +360,7 @@ def calc(dataset, steering_table, ranges, penalties,
     if relative is None:
         relative = default_config['variables']['relative']
     if reference_period is None:
-        reference_period = default_config['data.extra']['control_period']
+        reference_period = default_config['data']['extra']['control_period']
     if not nstep1:
         nstep1 = default_config['resampling']['nstep1']
     if not nstep3:
